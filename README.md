@@ -7,6 +7,8 @@
 ![SQLite](https://img.shields.io/badge/Database-SQLite-003B57?style=flat-square&logo=sqlite&logoColor=white)
 ![Leaflet](https://img.shields.io/badge/Maps-Leaflet%20%2B%20OpenStreetMap-199900?style=flat-square&logo=leaflet&logoColor=white)
 [![CI/CD](https://github.com/ashishkr-001/SpotShare_DevOps_Project/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/ashishkr-001/SpotShare_DevOps_Project/actions/workflows/ci-cd.yml)
+[![Docker CI](https://github.com/ashishkr-001/SpotShare_DevOps_Project/actions/workflows/docker-ci.yml/badge.svg)](https://github.com/ashishkr-001/SpotShare_DevOps_Project/actions/workflows/docker-ci.yml)
+[![PR Hygiene](https://github.com/ashishkr-001/SpotShare_DevOps_Project/actions/workflows/pr-checks.yml/badge.svg)](https://github.com/ashishkr-001/SpotShare_DevOps_Project/actions/workflows/pr-checks.yml)
 
 
 ---
@@ -341,3 +343,36 @@ npm run build
 | **Forgot password says `No account found`** | Customer and host profiles are stored in browser `localStorage` (`spotshare_registered_users` / `spotshare_registered_hosts`); make sure you are testing with an email registered in that browser. |
 | **Frontend shows `Cannot reach the server`** | Confirm the FastAPI backend is running on port `8000` (`http://localhost:8000/api/health`). |
 | **Note on Simulator & Auth Storage** | The check-in barrier simulator is software-only (no hardware integration). User/host login profiles persist in browser `localStorage`, while listings, bookings, analytics, and password-reset OTPs persist in SQLite. |
+
+---
+
+## DevOps, Docker & CI/CD Pipelines
+
+### GitHub Actions Workflows (`.github/workflows/`)
+1. **`ci-cd.yml` (`SpotShare CI/CD Pipeline`)** — Runs on pushes to `main` & feature branches (`feat/**`, `ci/**`, `fix/**`, `member-*`) and Pull Requests:
+   - `backend-ci`: Python bytecode check, SQLite `init`/`reset` smoke test, and full `pytest test_backend.py -v` suite.
+   - `frontend-ci`: `npm ci`, Vite multi-page build (`index.html`, `host.html`, `showcase.html`), and `frontend-dist` artifact upload.
+   - `integration-smoke-test`: Boots live `uvicorn` server and checks `/api/health`, `/api/spots`, `/api/recommendations`, `/api/insights`, and `/docs`.
+   - `cd-deploy`: Deploys built frontend bundle to GitHub Pages on merge to `main`.
+2. **`docker-ci.yml` (`Docker Build & Container Health CI`)** — Validates `docker-compose.yml`, builds `backend/Dockerfile` & `frontend/Dockerfile`, and smoke-tests live running containers.
+3. **`pr-checks.yml` (`PR Quality & Security Hygiene Checks`)** — Verifies no `.env`, `*.db`, or `node_modules/` are tracked, runs `pip check`, `compileall`, and `npm audit`.
+
+### Run with Docker Compose
+```bash
+docker compose up --build
+```
+- **Frontend:** `http://localhost:5173`
+- **Backend API & Docs:** `http://localhost:8000/docs`
+
+---
+
+## Team Collaboration & 5-Member Split
+
+| Member | Module Ownership | Feature Branch |
+|---|---|---|
+| **Member 1** | Backend API, Pydantic Models & SMTP Mailer (`main.py`, `models.py`, `mailer.py`) | `feat/api-auth-mailer` |
+| **Member 2** | SQLite Data Layer & Recommendation Engine (`database.py`, `recommendations.py`) | `feat/db-recommendations` |
+| **Member 3** | Customer Marketplace UI, Leaflet Map & Showcase (`App.jsx`, `ParkingMap.jsx`, `BookingModal.jsx`, `FilterBar.jsx`) | `feat/customer-marketplace` |
+| **Member 4** | Host Hub, Station Controls & Insights (`HostApp.jsx`, `AddChargerForm.jsx`, `SmartInsights.jsx`, `PasswordInput.jsx`) | `feat/host-hub-controls` |
+| **Member 5** | DevOps, Docker, CI/CD Pipelines, Pytest Suite & Docs (`.github/`, `Dockerfile`s, `test_backend.py`, `README.md`) | `ci/github-actions-pipeline` |
+

@@ -31,3 +31,7 @@ Thumbs.db
 output/
 scratch/
 dist/
+
+# Local per-member starter folders (kept local so main stays clean)
+team-members/
+

@@ -1,0 +1,35 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: spotshare-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - SPOTSHARE_DB_PATH=/app/data/spotshare.db
+      - SPOTSHARE_CORS_ORIGINS=*
+    volumes:
+      - spotshare_sqlite_data:/app/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=3)"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: spotshare-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  spotshare_sqlite_data:

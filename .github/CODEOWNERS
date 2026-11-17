@@ -1,35 +1,57 @@
 # SpotShare Team Code Ownership Specification
 # Any pull request touching these files will automatically request review from the owner.
 
-# Member 1: Backend API & Auth/OTP Mailer
-/backend/main.py             @member1-username
-/backend/models.py           @member1-username
-/backend/mailer.py           @member1-username
-/backend/.env.example        @member1-username
+# Member 1: Backend API, Models & Auth/OTP Mailer
+/backend/main.py                        @member1-username
+/backend/models.py                      @member1-username
+/backend/mailer.py                      @member1-username
+/backend/.env.example                   @member1-username
+/backend/requirements.txt               @member1-username
 
 # Member 2: Data Architecture, Concurrency, Seeding & Recommendations
-/backend/database.py         @member2-username
-/backend/recommendations.py  @member2-username
-/backend/spotshare.db        @member2-username
+/backend/database.py                    @member2-username
+/backend/recommendations.py             @member2-username
 
-# Member 3: Customer Marketplace & Interactive Map
-/frontend/src/App.jsx                 @member3-username
-/frontend/src/components/ParkingMap.jsx @member3-username
-/frontend/src/components/BookingModal.jsx @member3-username
-/frontend/src/components/FilterBar.jsx @member3-username
-/frontend/src/styles.css              @member3-username
-/frontend/index.html                  @member3-username
+# Member 3: Customer Marketplace UI, Interactive Map & Showcase
+/frontend/index.html                    @member3-username
+/frontend/showcase.html                 @member3-username
+/frontend/package.json                  @member3-username
+/frontend/package-lock.json             @member3-username
+/frontend/vite.config.js                @member3-username
+/frontend/.env.example                  @member3-username
+/frontend/.gitignore                    @member3-username
+/frontend/src/main.jsx                  @member3-username
+/frontend/src/App.jsx                   @member3-username
+/frontend/src/styles.css                @member3-username
+/frontend/src/components/BookingModal.jsx   @member3-username
+/frontend/src/components/FilterBar.jsx      @member3-username
+/frontend/src/components/LandingPage.jsx    @member3-username
+/frontend/src/components/LandingPage.css    @member3-username
+/frontend/src/components/ParkingMap.jsx     @member3-username
+/frontend/src/components/SpotCard.jsx       @member3-username
+/frontend/src/components/SpotShareLogo.jsx  @member3-username
+/frontend/public/                       @member3-username
 
 # Member 4: Host Hub, Station Controls & Insights
-/frontend/src/HostApp.jsx             @member4-username
-/frontend/src/AddChargerForm.jsx      @member4-username
-/frontend/src/HostApp.css             @member4-username
-/frontend/src/components/SmartInsights.jsx @member4-username
-/frontend/src/components/PasswordInput.jsx @member4-username
-/frontend/host.html                   @member4-username
+/frontend/host.html                     @member4-username
+/frontend/src/host-main.jsx             @member4-username
+/frontend/src/HostApp.jsx               @member4-username
+/frontend/src/HostApp.css               @member4-username
+/frontend/src/AddChargerForm.jsx        @member4-username
+/frontend/src/api.js                    @member4-username
+/frontend/src/components/AuthTopBar.jsx     @member4-username
+/frontend/src/components/PasswordInput.jsx  @member4-username
+/frontend/src/components/SmartInsights.jsx  @member4-username
 
-# Member 5: DevOps, Testing, CI/CD Pipeline & Quality Assurance
-/backend/test_backend.py     @member5-username
-/.github/workflows/          @member5-username
-/README.md                   @member5-username
-/package.json                @member5-username
+# Member 5: DevOps, Containers, CI/CD Pipelines, Testing & Docs
+/backend/test_backend.py                @member5-username
+/backend/Dockerfile                     @member5-username
+/frontend/Dockerfile                    @member5-username
+/docker-compose.yml                     @member5-username
+/.dockerignore                          @member5-username
+/.github/                               @member5-username
+/.gitignore                             @member5-username
+/package.json                           @member5-username
+/README.md                              @member5-username
+/run.bat                                @member5-username
+/run.sh                                 @member5-username

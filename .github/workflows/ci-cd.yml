@@ -2,9 +2,19 @@ name: SpotShare CI/CD Pipeline
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - 'feat/**'
+      - 'ci/**'
+      - 'fix/**'
+      - 'member-*'
   pull_request:
     branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -13,7 +23,7 @@ permissions:
 
 jobs:
   # -------------------------------------------------------------
-  # Job 1: Backend CI (Unit & Integration Tests via pytest)
+  # Job 1: Backend CI (Syntax, DB CLI Smoke & Pytest Suite)
   # -------------------------------------------------------------
   backend-ci:
     name: Backend CI (FastAPI + SQLite Tests)
@@ -37,12 +47,20 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt pytest httpx
 
-      - name: Run Pytest test suite
+      - name: Python syntax check
+        run: python -m compileall -q .
+
+      - name: Database init & reset smoke test
         run: |
-          python -m pytest test_backend.py -v
+          SPOTSHARE_DB_PATH=/tmp/ci_db_smoke.db python database.py init
+          SPOTSHARE_DB_PATH=/tmp/ci_db_smoke.db python database.py reset
+          rm -f /tmp/ci_db_smoke.db
+
+      - name: Run Pytest test suite
+        run: python -m pytest test_backend.py -v
 
   # -------------------------------------------------------------
-  # Job 2: Frontend CI (Lint, Type/Syntax & Vite Production Build)
+  # Job 2: Frontend CI (React 18 + Vite Multi-Page Build)
   # -------------------------------------------------------------
   frontend-ci:
     name: Frontend CI (React 18 + Vite Build)
@@ -67,6 +85,13 @@ jobs:
       - name: Build production bundle
         run: npm run build
 
+      - name: Verify multi-page output bundles
+        run: |
+          test -f dist/index.html
+          test -f dist/host.html
+          test -f dist/showcase.html
+          ls -lh dist/
+
       - name: Upload frontend build artifact
         uses: actions/upload-artifact@v4
         with:
@@ -74,11 +99,60 @@ jobs:
           path: frontend/dist
 
   # -------------------------------------------------------------
-  # Job 3: CD Pipeline (Continuous Deployment to GitHub Pages on main)
+  # Job 3: Full-Stack API Integration Smoke Test
+  # -------------------------------------------------------------
+  integration-smoke-test:
+    name: Integration Smoke Test (Live FastAPI Server)
+    needs: [backend-ci, frontend-ci]
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install runtime dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Start FastAPI & verify live endpoints
+        run: |
+          export SPOTSHARE_DB_PATH=/tmp/integration_smoke.db
+          uvicorn main:app --host 127.0.0.1 --port 8000 &
+          SERVER_PID=$!
+          trap "kill $SERVER_PID 2>/dev/null || true; rm -f /tmp/integration_smoke.db" EXIT
+
+          for i in $(seq 1 20); do
+            if curl -fsS http://127.0.0.1:8000/api/health >/dev/null 2>&1; then
+              echo "FastAPI server is up!"
+              break
+            fi
+            sleep 1
+          done
+
+          curl -fsS http://127.0.0.1:8000/api/health
+          echo ""
+          curl -fsS http://127.0.0.1:8000/api/spots >/dev/null
+          curl -fsS "http://127.0.0.1:8000/api/recommendations?lat=12.3085&lng=76.6527&limit=3" >/dev/null
+          curl -fsS http://127.0.0.1:8000/api/insights >/dev/null
+          curl -fsS http://127.0.0.1:8000/docs >/dev/null
+          echo "All live FastAPI endpoints passed HTTP 200 checks!"
+
+  # -------------------------------------------------------------
+  # Job 4: CD Pipeline (Deploy Frontend & Summary on main)
   # -------------------------------------------------------------
   cd-deploy:
     name: CD (Deploy to GitHub Pages)
-    needs: [backend-ci, frontend-ci]
+    needs: [backend-ci, frontend-ci, integration-smoke-test]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
     environment:
@@ -105,3 +179,12 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
         continue-on-error: true
+
+      - name: Write CD Summary
+        run: |
+          echo "### SpotShare CI/CD Pipeline Completed" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Branch:** \`${{ github.ref_name }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Commit:** \`${{ github.sha }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Backend Tests & Live Smoke:** Passed" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Frontend Bundle (\`index.html\`, \`host.html\`, \`showcase.html\`):** Built & Packaged" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **GitHub Pages URL:** ${{ steps.deployment.outputs.page_url || 'Enable Settings -> Pages -> GitHub Actions to publish live' }}" >> "$GITHUB_STEP_SUMMARY"

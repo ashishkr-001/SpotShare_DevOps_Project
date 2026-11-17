@@ -1,0 +1,59 @@
+name: PR Quality & Security Hygiene Checks
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  hygiene-and-security:
+    name: Repository Hygiene & Dependency Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check no secrets or runtime DBs are tracked
+        run: |
+          BAD_FILES=$(git ls-files | grep -E '(^|/)\.env$|\.db$|\.sqlite|node_modules/|__pycache__/' || true)
+          if [ -n "$BAD_FILES" ]; then
+            echo "Forbidden tracked files detected:"
+            echo "$BAD_FILES"
+            exit 1
+          fi
+          echo "Hygiene check passed: no .env, SQLite DB, or build artifacts tracked."
+
+      - name: Verify Python bytecode compilation & pip tree
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Check Python dependencies & syntax
+        working-directory: backend
+        run: |
+          pip install -r requirements.txt
+          pip check
+          python -m compileall -q .
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Run frontend npm security audit
+        working-directory: frontend
+        continue-on-error: true
+        run: npm audit --audit-level=high
+
+      - name: Write Hygiene Summary
+        run: |
+          echo "### Quality & Hygiene Checks Passed" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Zero tracked \`.env\`, \`*.db\`, or \`node_modules/\` files" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Python dependency tree verified via \`pip check\` and \`compileall\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Frontend dependency audit executed" >> "$GITHUB_STEP_SUMMARY"
