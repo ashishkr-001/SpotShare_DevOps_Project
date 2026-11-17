@@ -10,6 +10,7 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, 'index.html'),
         host: resolve(__dirname, 'host.html'),
+        showcase: resolve(__dirname, 'showcase.html'),
       },
     },
   },

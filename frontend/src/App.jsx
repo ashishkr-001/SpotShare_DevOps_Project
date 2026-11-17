@@ -754,23 +754,6 @@ function AuthScreen({ onLogin, initialTab = 'login', onBackToHome = null, isExit
           <p className="muted small">Mysuru Parking &amp; EV Charging Marketplace</p>
         </div>
 
-        <div className="auth-tabs" role="tablist">
-          <button
-            type="button"
-            className={`auth-tab ${tab === 'login' || tab === 'register' || tab === 'forgot' ? 'active' : ''}`}
-            onClick={() => { setTab('login'); setError(''); setSuccessMsg('') }}
-          >
-            Customer Login
-          </button>
-          <button
-            type="button"
-            className={`auth-tab ${tab === 'host' ? 'active' : ''}`}
-            style={{ color: '#059669', fontWeight: 'bold' }}
-            onClick={() => { setTab('host') }}
-          >
-            Host / Owner
-          </button>
-        </div>
 
         {tab !== 'forgot' && (
           <>

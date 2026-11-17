@@ -1,0 +1,301 @@
+# MCP / AI Development Skills Collection
+
+A curated set of skills, MCP integrations, code quality tools, UI/UX enhancements, and React performance optimization resources.
+
+═══════════════════════════════════════════════════════════════════════
+
+## 1. Unslop Skill
+
+Purpose:
+Improve AI-generated code quality and reduce "slop" in outputs.
+
+Repository:
+https://github.com/heydamir/unslop.git
+
+Installation:
+npx skills add https://github.com/heydamir/unslop.git
+
+═══════════════════════════════════════════════════════════════════════
+
+## 2. Impeccable Skill
+
+Purpose:
+AI-powered code review and quality enforcement.
+
+Repository:
+https://github.com/pbakaus/impeccable.git
+
+Installation:
+npx impeccable install
+
+Run Review:
+npx impeccable detect src/
+
+Suggested Usage:
+- Code reviews
+- Refactoring validation
+- Architecture critiques
+- Best-practice enforcement
+
+═══════════════════════════════════════════════════════════════════════
+
+## 3. React Bits Setup
+
+Purpose:
+Access React Bits components through the shadcn MCP ecosystem.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+STEP 1: Add React Bits Registry
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+components.json
+
+{
+  "registries": {
+    "@react-bits": "https://reactbits.dev/r/{name}.json"
+  }
+}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+STEP 2: Configure shadcn MCP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+### Antigravity
+
+Add to:
+
+~/.gemini/config/mcp_config.json
+
+or
+
+.agents/mcp_config.json
+
+{
+  "mcpServers": {
+    "shadcn": {
+      "command": "npx",
+      "args": [
+        "shadcn@latest",
+        "mcp"
+      ]
+    }
+  }
+}
+
+Supported In:
+- Antigravity CLI (agy)
+- Antigravity IDE
+- Antigravity 2.0
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+### Claude Code
+
+Setup:
+
+npx shadcn@latest mcp init --client claude
+
+Restart Claude Code.
+
+Debug:
+
+/mcp
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+### OpenAI Codex
+
+Add to:
+
+~/.codex/config.toml
+
+[mcp_servers.shadcn]
+command = "npx"
+args = ["shadcn@latest", "mcp"]
+
+Restart Codex after configuration.
+
+Note:
+Codex cannot be configured automatically by the CLI.
+
+═══════════════════════════════════════════════════════════════════════
+
+## 4. Color Picker Skill
+
+Purpose:
+AI-assisted color selection and palette recommendations.
+
+Installation:
+
+npx skillfish add subframeapp/claude-skills-testing get_best_color
+
+═══════════════════════════════════════════════════════════════════════
+
+## 5. Vercel React Best Practices Skill
+
+Purpose:
+Comprehensive React and Next.js optimization rules maintained by Vercel.
+
+Metadata:
+
+Name:
+vercel-react-best-practices
+
+Author:
+Vercel
+
+Version:
+1.0.0
+
+License:
+MIT
+
+Use For:
+- React development
+- Next.js development
+- Performance optimization
+- Code reviews
+- Refactoring
+- Bundle analysis
+- Data-fetching improvements
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Priority Categories
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Eliminating Waterfalls (CRITICAL)
+   Prefix: async-
+
+2. Bundle Size Optimization (CRITICAL)
+   Prefix: bundle-
+
+3. Server-Side Performance (HIGH)
+   Prefix: server-
+
+4. Client-Side Data Fetching (MEDIUM-HIGH)
+   Prefix: client-
+
+5. Re-render Optimization (MEDIUM)
+   Prefix: rerender-
+
+6. Rendering Performance (MEDIUM)
+   Prefix: rendering-
+
+7. JavaScript Performance (LOW-MEDIUM)
+   Prefix: js-
+
+8. Advanced Patterns (LOW)
+   Prefix: advanced-
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Most Valuable Rules
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Async:
+- async-parallel
+- async-defer-await
+- async-api-routes
+- async-suspense-boundaries
+
+Bundle:
+- bundle-barrel-imports
+- bundle-dynamic-imports
+- bundle-conditional
+- bundle-preload
+
+Server:
+- server-cache-react
+- server-parallel-fetching
+- server-serialization
+- server-after-nonblocking
+
+React Rendering:
+- rerender-memo
+- rerender-transitions
+- rerender-use-deferred-value
+- rerender-functional-setstate
+- rerender-derived-state
+
+Performance:
+- rendering-content-visibility
+- rendering-resource-hints
+- rendering-script-defer-async
+
+JavaScript:
+- js-set-map-lookups
+- js-combine-iterations
+- js-early-exit
+- js-cache-function-results
+
+Documentation:
+AGENTS.md
+
+Rule Examples:
+rules/async-parallel.md
+rules/bundle-barrel-imports.md
+
+═══════════════════════════════════════════════════════════════════════
+
+## 6. Anthropic Frontend Design Skill
+
+Purpose:
+Frontend design expertise for AI coding workflows.
+
+Installation:
+
+npx skills add https://github.com/anthropics/skills --skill frontend-design
+
+Recommended For:
+- UI design
+- Design systems
+- Component architecture
+- Responsive layouts
+- Production frontend implementations
+
+═══════════════════════════════════════════════════════════════════════
+
+## 7. UI/UX Pro Max Skill
+
+Purpose:
+Advanced UI and UX design patterns.
+
+Repository:
+https://github.com/nextlevelbuilder/ui-ux-pro-max-skill
+
+Installation:
+
+npx skills add https://github.com/nextlevelbuilder/ui-ux-pro-max-skill --skill ui-ux-pro-max
+
+Recommended For:
+- Premium UI design
+- Landing pages
+- SaaS dashboards
+- Mobile-first interfaces
+- Conversion-focused UX
+- Enterprise applications
+
+═══════════════════════════════════════════════════════════════════════
+
+
+Quick Install Commands
+
+# Unslop
+npx skills add https://github.com/heydamir/unslop.git
+
+# Impeccable
+npx impeccable install
+
+# React Bits MCP
+npx shadcn@latest mcp init
+
+# Color Picker
+npx skillfish add subframeapp/claude-skills-testing get_best_color
+
+# Frontend Design
+npx skills add https://github.com/anthropics/skills --skill frontend-design
+
+# UI/UX Pro Max
+npx skills add https://github.com/nextlevelbuilder/ui-ux-pro-max-skill --skill ui-ux-pro-max
+
+# Impeccable Review
+npx impeccable detect src/

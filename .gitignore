@@ -26,3 +26,8 @@ htmlcov/
 # Operating system files
 .DS_Store
 Thumbs.db
+
+# Build and scratch artifacts
+output/
+scratch/
+dist/

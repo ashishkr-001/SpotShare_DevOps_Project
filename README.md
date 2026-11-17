@@ -6,6 +6,8 @@
 ![React](https://img.shields.io/badge/Frontend-React%2018%20%2B%20Vite-2563EB?style=flat-square&logo=react&logoColor=white)
 ![SQLite](https://img.shields.io/badge/Database-SQLite-003B57?style=flat-square&logo=sqlite&logoColor=white)
 ![Leaflet](https://img.shields.io/badge/Maps-Leaflet%20%2B%20OpenStreetMap-199900?style=flat-square&logo=leaflet&logoColor=white)
+[![CI/CD](https://github.com/ashishkr-001/SpotShare_DevOps_Project/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/ashishkr-001/SpotShare_DevOps_Project/actions/workflows/ci-cd.yml)
+
 
 ---
 

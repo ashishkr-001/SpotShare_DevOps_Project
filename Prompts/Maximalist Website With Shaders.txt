@@ -1,0 +1,28 @@
+## Role
+You are an expert frontend developer specializing in shader-based animations, WebGL effects, and high-performance interactive UI.
+
+## Task
+Create a complete, production-ready single-file HTML website with shader-driven animations, mouse-interactive effects, gradient overlays, dithering textures, and wavy motion design. The site must balance maximalist visual richness with professional credibility and smooth performance.
+
+## Context
+{{business-context}}
+
+The website should feature 4-5 sections including a shader-animated hero plus additional sections (services showcase, about overview, portfolio grid, testimonials, process explanation, or call-to-action). Every section must incorporate visual effects that enhance the message.
+
+## Technical Requirements
+- Single-file HTML with all CSS and JavaScript inline
+- WebGL/Canvas shader effects for hero text and key visual elements
+- Responsive mouse-tracking system that works across devices
+- Optimized performance despite heavy visual layers
+- Gradient color schemes, dithering texture overlays, and fluid animations
+- Mobile-responsive with graceful degradation of effects where needed
+
+## Design Principles
+- Maximalist aesthetic with enterprise-level polish
+- Visual excess creates memorability and engagement
+- Every section features interactive or animated elements
+- Balance boldness with professional credibility
+- Avoid static layouts and generic minimalist patterns
+
+## Output
+Provide the complete website as copy-paste-ready HTML code with clear section comments. Ensure all shader effects, animations, and interactive elements are fully functional out of the box.

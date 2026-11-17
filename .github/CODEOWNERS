@@ -1,0 +1,35 @@
+# SpotShare Team Code Ownership Specification
+# Any pull request touching these files will automatically request review from the owner.
+
+# Member 1: Backend API & Auth/OTP Mailer
+/backend/main.py             @member1-username
+/backend/models.py           @member1-username
+/backend/mailer.py           @member1-username
+/backend/.env.example        @member1-username
+
+# Member 2: Data Architecture, Concurrency, Seeding & Recommendations
+/backend/database.py         @member2-username
+/backend/recommendations.py  @member2-username
+/backend/spotshare.db        @member2-username
+
+# Member 3: Customer Marketplace & Interactive Map
+/frontend/src/App.jsx                 @member3-username
+/frontend/src/components/ParkingMap.jsx @member3-username
+/frontend/src/components/BookingModal.jsx @member3-username
+/frontend/src/components/FilterBar.jsx @member3-username
+/frontend/src/styles.css              @member3-username
+/frontend/index.html                  @member3-username
+
+# Member 4: Host Hub, Station Controls & Insights
+/frontend/src/HostApp.jsx             @member4-username
+/frontend/src/AddChargerForm.jsx      @member4-username
+/frontend/src/HostApp.css             @member4-username
+/frontend/src/components/SmartInsights.jsx @member4-username
+/frontend/src/components/PasswordInput.jsx @member4-username
+/frontend/host.html                   @member4-username
+
+# Member 5: DevOps, Testing, CI/CD Pipeline & Quality Assurance
+/backend/test_backend.py     @member5-username
+/.github/workflows/          @member5-username
+/README.md                   @member5-username
+/package.json                @member5-username
