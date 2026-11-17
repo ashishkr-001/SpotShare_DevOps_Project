@@ -17,6 +17,8 @@ from main import app
 import recommendations
 
 client = TestClient(app)
+now_local = database.now_local
+
 
 
 @pytest.fixture(autouse=True)
@@ -56,7 +58,7 @@ def test_booking_creation_and_capacity_decrement():
     spot_id = spot["id"]
 
     # 2. Create a valid booking
-    start = datetime.now() + timedelta(hours=1)
+    start = now_local() + timedelta(hours=1)
     end = start + timedelta(hours=2)
 
     payload = {
@@ -90,8 +92,8 @@ def test_booking_creation_and_capacity_decrement():
 
 def test_booking_validation_errors():
     # Test invalid duration (end before start)
-    start = datetime.now() + timedelta(hours=2)
-    end = datetime.now() + timedelta(hours=1)
+    start = now_local() + timedelta(hours=2)
+    end = now_local() + timedelta(hours=1)
     payload = {
         "spot_id": "spot101",
         "customer_name": "Invalid Booking",
@@ -116,7 +118,7 @@ def test_recommendations_endpoint():
 
 def test_simulator_check_in_and_reset():
     # Create booking first
-    start = datetime.now()
+    start = now_local()
     end = start + timedelta(hours=1)
     payload = {
         "spot_id": "spot101",
@@ -217,7 +219,7 @@ def test_close_and_reopen_ev_charger_station():
     assert all(s["id"] != spot_id for s in recs_res.json())
 
     # Bookings are rejected while closed
-    start = datetime.now() + timedelta(hours=1)
+    start = now_local() + timedelta(hours=1)
     end = start + timedelta(hours=1)
     book_res = client.post(
         "/api/bookings",
@@ -394,7 +396,7 @@ def test_booking_confirmation_email(monkeypatch, tmp_path):
     monkeypatch.delenv("SPOTSHARE_SMTP_PASSWORD", raising=False)
     monkeypatch.setattr(mailer, "ENV_PATH", tmp_path / "missing.env")
 
-    start = datetime.now() + timedelta(hours=3)
+    start = now_local() + timedelta(hours=3)
     end = start + timedelta(hours=2)
     unconf = client.post(
         "/api/bookings",
