@@ -1,4 +1,5 @@
 """SpotShare FastAPI backend. Owner: Member 2.
+spotshare backend file
 
 Run from the backend/ directory:   uvicorn main:app --reload --port 8000
 Interactive docs:                  http://localhost:8000/docs
