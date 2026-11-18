@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import AddChargerForm from './AddChargerForm.jsx'
 import PasswordInput from './components/PasswordInput.jsx'
 import AuthTopBar from './components/AuthTopBar.jsx'
+import ShaderBackdrop from './components/ShaderBackdrop.jsx'
 import { API_BASE, apiRequest } from './api.js'
 import './HostApp.css'
 
@@ -66,30 +67,36 @@ function ErrorBox({ message, onRetry }) {
 }
 
 const HOST_USERS_KEY = 'spotshare_registered_hosts'
+const DEMO_HOST_PURGE_KEY = 'spotshare_demo_hosts_purged_v1'
 
-const INITIAL_HOSTS = [
-  { name: 'Ashish', email: 'ashish@gmail.com', password: 'password123' },
-  { name: 'Demo Host', email: 'demohost@gmail.com', password: 'password123' },
-]
+function isSeededDemoHost(h) {
+  const email = String(h?.email || '').trim().toLowerCase()
+  const name = String(h?.name || '').trim().toLowerCase()
+  if (email === 'demohost@gmail.com' || name === 'demo host') return true
+  if (email === 'ashish@gmail.com' && (h?.password === 'password123' || h?.password === 'google_oauth')) return true
+  return false
+}
 
 function getStoredHosts() {
   try {
     const raw = localStorage.getItem(HOST_USERS_KEY)
     if (raw) {
       const parsed = JSON.parse(raw)
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        const hasAshish = parsed.some(
-          (h) => h.name.toLowerCase() === 'ashish' || (h.email && h.email.toLowerCase() === 'ashish@gmail.com')
-        )
-        const list = [...parsed]
-        if (!hasAshish) list.unshift(INITIAL_HOSTS[0])
-        return list
+      if (Array.isArray(parsed)) {
+        if (!localStorage.getItem(DEMO_HOST_PURGE_KEY)) {
+          const cleaned = parsed.filter((h) => !isSeededDemoHost(h))
+          localStorage.setItem(HOST_USERS_KEY, JSON.stringify(cleaned))
+          localStorage.setItem(DEMO_HOST_PURGE_KEY, '1')
+          return cleaned
+        }
+        return parsed
       }
     }
+    localStorage.setItem(DEMO_HOST_PURGE_KEY, '1')
   } catch {
     /* ignore */
   }
-  return INITIAL_HOSTS
+  return []
 }
 
 function saveStoredHosts(hosts) {
@@ -113,6 +120,8 @@ function IdentityGate({ onSubmit, onBack, onBackToHome, isExiting = false }) {
   const [googleModalOpen, setGoogleModalOpen] = useState(false)
   const [customEmail, setCustomEmail] = useState('')
   const [showCustomEmail, setShowCustomEmail] = useState(false)
+  const [googleError, setGoogleError] = useState('')
+  const savedHostAccounts = googleModalOpen ? getStoredHosts().filter((h) => h.email) : []
 
   const [forgotIdentifier, setForgotIdentifier] = useState('')
   const [forgotHost, setForgotHost] = useState(null)
@@ -311,6 +320,7 @@ function IdentityGate({ onSubmit, onBack, onBackToHome, isExiting = false }) {
     setGoogleModalOpen(false)
     setShowCustomEmail(false)
     setCustomEmail('')
+    setGoogleError('')
     const hosts = getStoredHosts()
     const emailLower = email.toLowerCase()
     let matched = hosts.find(
@@ -325,9 +335,10 @@ function IdentityGate({ onSubmit, onBack, onBackToHome, isExiting = false }) {
 
   const handleCustomGoogleSubmit = (e) => {
     e.preventDefault()
+    setGoogleError('')
     const email = customEmail.trim().toLowerCase()
     if (!email.includes('@') || !email.includes('.')) {
-      alert('Please enter a valid email address (e.g. name@example.com)')
+      setGoogleError('Please enter a valid email address (e.g. name@example.com)')
       return
     }
     const namePart = email.split('@')[0]
@@ -336,7 +347,8 @@ function IdentityGate({ onSubmit, onBack, onBackToHome, isExiting = false }) {
   }
 
   return (
-    <div className={`auth-page-shell ${isExiting ? 'is-leaving' : ''}`}>
+    <div className={`auth-page-shell auth-page-shell--host ${isExiting ? 'is-leaving' : ''}`}>
+      <ShaderBackdrop mode="host" />
       <AuthTopBar
         mode="host"
         onSwitchMode={onBack}
@@ -356,7 +368,7 @@ function IdentityGate({ onSubmit, onBack, onBackToHome, isExiting = false }) {
               ? 'Register Host Account'
               : 'Reset Host Password'}
         </h1>
-        <p style={{ color: '#64748b', fontSize: '0.88rem', margin: '0 0 20px' }}>
+        <p className="host-auth-subtitle">
           {tab === 'login'
             ? 'Sign in to manage your private or commercial EV charging bays'
             : tab === 'register'
@@ -388,13 +400,13 @@ function IdentityGate({ onSubmit, onBack, onBackToHome, isExiting = false }) {
         )}
 
         {error && (
-          <div style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#dc2626', padding: '10px 14px', borderRadius: '8px', fontSize: '0.82rem', textAlign: 'left', marginBottom: '16px' }}>
+          <div className="host-alert-error" role="alert">
             {error}
           </div>
         )}
 
         {success && (
-          <div style={{ background: '#ecfdf5', border: '1px solid #a7f3d0', color: '#059669', padding: '10px 14px', borderRadius: '8px', fontSize: '0.82rem', textAlign: 'left', marginBottom: '16px' }}>
+          <div className="host-alert-success" role="status">
             {success}
           </div>
         )}
@@ -403,15 +415,17 @@ function IdentityGate({ onSubmit, onBack, onBackToHome, isExiting = false }) {
           /* Host Login Form */
           <form onSubmit={handleLogin} noValidate style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             <div style={{ textAlign: 'left' }}>
-              <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
+              <label htmlFor="host-login-identifier" className="host-field-label">
                 Name or Email
               </label>
               <input
+                id="host-login-identifier"
                 type="text"
                 className="host-input"
                 value={loginName}
                 maxLength={100}
                 autoFocus
+                autoComplete="username"
                 onChange={(e) => { setLoginName(e.target.value); setError('') }}
                 placeholder="Enter host name or email"
               />
@@ -419,7 +433,7 @@ function IdentityGate({ onSubmit, onBack, onBackToHome, isExiting = false }) {
 
             <div style={{ textAlign: 'left' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                <label htmlFor="host-login-password" style={{ fontSize: '0.82rem', fontWeight: 600, color: '#334155' }}>
+                <label htmlFor="host-login-password" className="host-field-label host-field-label--inline">
                   Password
                 </label>
                 <button
@@ -446,7 +460,7 @@ function IdentityGate({ onSubmit, onBack, onBackToHome, isExiting = false }) {
               Sign In to Host Dashboard →
             </button>
 
-            <p style={{ fontSize: '0.83rem', color: '#64748b', margin: '6px 0 0' }}>
+            <p className="host-auth-helper">
               New host?
               <button
                 type="button"
@@ -461,36 +475,40 @@ function IdentityGate({ onSubmit, onBack, onBackToHome, isExiting = false }) {
           /* Host Register Form */
           <form onSubmit={handleRegister} noValidate style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             <div style={{ textAlign: 'left' }}>
-              <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
+              <label htmlFor="host-reg-name" className="host-field-label">
                 Host / Business Name
               </label>
               <input
+                id="host-reg-name"
                 type="text"
                 className="host-input"
                 value={regName}
                 maxLength={80}
                 autoFocus
+                autoComplete="organization"
                 onChange={(e) => { setRegName(e.target.value); setError('') }}
                 placeholder="e.g. GreenBay Mysuru"
               />
             </div>
 
             <div style={{ textAlign: 'left' }}>
-              <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
+              <label htmlFor="host-reg-email" className="host-field-label">
                 Email Address
               </label>
               <input
+                id="host-reg-email"
                 type="email"
                 className="host-input"
                 value={regEmail}
                 maxLength={100}
+                autoComplete="email"
                 onChange={(e) => { setRegEmail(e.target.value); setError('') }}
                 placeholder="e.g. host@example.com"
               />
             </div>
 
             <div style={{ textAlign: 'left' }}>
-              <label htmlFor="host-reg-password" style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
+              <label htmlFor="host-reg-password" className="host-field-label">
                 Create Password
               </label>
               <PasswordInput
@@ -505,7 +523,7 @@ function IdentityGate({ onSubmit, onBack, onBackToHome, isExiting = false }) {
             </div>
 
             <div style={{ textAlign: 'left' }}>
-              <label htmlFor="host-reg-confirm" style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
+              <label htmlFor="host-reg-confirm" className="host-field-label">
                 Confirm Password
               </label>
               <PasswordInput
@@ -523,7 +541,7 @@ function IdentityGate({ onSubmit, onBack, onBackToHome, isExiting = false }) {
               Register Host Account &amp; Enter →
             </button>
 
-            <p style={{ fontSize: '0.83rem', color: '#64748b', margin: '6px 0 0' }}>
+            <p className="host-auth-helper">
               Already registered?
               <button
                 type="button"
@@ -538,15 +556,17 @@ function IdentityGate({ onSubmit, onBack, onBackToHome, isExiting = false }) {
           /* Host Forgot Password Step 1: Lookup */
           <form onSubmit={handleForgotLookup} noValidate style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             <div style={{ textAlign: 'left' }}>
-              <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
+              <label htmlFor="host-forgot-identifier" className="host-field-label">
                 Host Name or Email
               </label>
               <input
+                id="host-forgot-identifier"
                 type="text"
                 className="host-input"
                 value={forgotIdentifier}
                 maxLength={100}
                 autoFocus
+                autoComplete="username"
                 onChange={(e) => { setForgotIdentifier(e.target.value); setError('') }}
                 placeholder="Enter host name or email"
               />
@@ -556,7 +576,7 @@ function IdentityGate({ onSubmit, onBack, onBackToHome, isExiting = false }) {
               {forgotBusy ? 'Sending code to email...' : 'Send Verification Code'}
             </button>
 
-            <p style={{ fontSize: '0.83rem', color: '#64748b', margin: '6px 0 0' }}>
+            <p className="host-auth-helper">
               Remember your password?
               <button
                 type="button"
@@ -572,7 +592,7 @@ function IdentityGate({ onSubmit, onBack, onBackToHome, isExiting = false }) {
           <form onSubmit={handleResetPassword} noValidate style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             <div style={{ textAlign: 'left' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                <label htmlFor="host-reset-code" style={{ fontSize: '0.82rem', fontWeight: 600, color: '#334155' }}>
+                <label htmlFor="host-reset-code" className="host-field-label host-field-label--inline">
                   6-Digit Verification Code
                 </label>
                 <button
@@ -599,7 +619,7 @@ function IdentityGate({ onSubmit, onBack, onBackToHome, isExiting = false }) {
             </div>
 
             <div style={{ textAlign: 'left' }}>
-              <label htmlFor="host-reset-password" style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
+              <label htmlFor="host-reset-password" className="host-field-label">
                 New Password
               </label>
               <PasswordInput
@@ -614,7 +634,7 @@ function IdentityGate({ onSubmit, onBack, onBackToHome, isExiting = false }) {
             </div>
 
             <div style={{ textAlign: 'left' }}>
-              <label htmlFor="host-reset-confirm" style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
+              <label htmlFor="host-reset-confirm" className="host-field-label">
                 Confirm New Password
               </label>
               <PasswordInput
@@ -632,7 +652,7 @@ function IdentityGate({ onSubmit, onBack, onBackToHome, isExiting = false }) {
               {forgotBusy ? 'Verifying & updating...' : 'Update Host Password →'}
             </button>
 
-            <p style={{ fontSize: '0.83rem', color: '#64748b', margin: '6px 0 0' }}>
+            <p className="host-auth-helper">
               <button
                 type="button"
                 className="host-auth-link"
@@ -655,7 +675,14 @@ function IdentityGate({ onSubmit, onBack, onBackToHome, isExiting = false }) {
 
         {/* Google / Email Account Selector Modal */}
         {googleModalOpen && (
-          <div className="google-modal-overlay" onClick={() => setGoogleModalOpen(false)}>
+          <div
+            className="google-modal-overlay"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="host-google-title"
+            onClick={() => setGoogleModalOpen(false)}
+            onKeyDown={(e) => { if (e.key === 'Escape') setGoogleModalOpen(false) }}
+          >
             <div className="google-modal-card" onClick={(e) => e.stopPropagation()}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
                 <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
@@ -664,61 +691,77 @@ function IdentityGate({ onSubmit, onBack, onBackToHome, isExiting = false }) {
                   <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
                   <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
                 </svg>
-                <h3 className="google-modal-title">Sign in with Google</h3>
+                <h3 id="host-google-title" className="google-modal-title">Sign in with Google</h3>
               </div>
-              <p className="google-modal-subtitle">Choose an account to continue to SpotShare Host Hub</p>
+              <p className="google-modal-subtitle">
+                {savedHostAccounts.length > 0
+                  ? 'Choose an account to continue to SpotShare Host Hub'
+                  : 'Enter your email address to continue to SpotShare Host Hub'}
+              </p>
 
-              <button
-                type="button"
-                className="google-account-item"
-                onClick={() => handleGoogleSelect('Ashish', 'ashish@gmail.com')}
-              >
-                <div className="google-avatar">A</div>
-                <div className="google-account-info">
-                  <span className="google-name">Ashish Kumar</span>
-                  <span className="google-email">ashish@gmail.com</span>
-                </div>
-              </button>
+              {savedHostAccounts.map((acc) => (
+                <button
+                  key={acc.email}
+                  type="button"
+                  className="google-account-item"
+                  onClick={() => handleGoogleSelect(acc.name || acc.email, acc.email)}
+                >
+                  <div className="google-avatar">{(acc.name?.[0] || acc.email?.[0] || 'H').toUpperCase()}</div>
+                  <div className="google-account-info">
+                    <span className="google-name">{acc.name}</span>
+                    <span className="google-email">{acc.email}</span>
+                  </div>
+                </button>
+              ))}
 
-              {!showCustomEmail ? (
+              {savedHostAccounts.length > 0 && !showCustomEmail ? (
                 <button
                   type="button"
                   className="google-account-item"
-                  onClick={() => setShowCustomEmail(true)}
+                  onClick={() => { setShowCustomEmail(true); setGoogleError('') }}
                   style={{ borderStyle: 'dashed' }}
                 >
-                  <div className="google-avatar" style={{ background: '#f1f5f9', color: '#64748b' }}>+</div>
+                  <div className="google-avatar google-avatar-add">+</div>
                   <div className="google-account-info">
                     <span className="google-name">Use another Email account</span>
                     <span className="google-email">Sign in with a different email</span>
                   </div>
                 </button>
               ) : (
-                <form onSubmit={handleCustomGoogleSubmit} className="google-custom-input-box">
-                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
+                <form onSubmit={handleCustomGoogleSubmit} className="google-custom-input-box" noValidate>
+                  <label htmlFor="host-google-custom-email" className="host-field-label" style={{ fontSize: '0.8rem' }}>
                     Enter Email Address
                   </label>
                   <input
+                    id="host-google-custom-email"
                     type="email"
                     className="host-input"
                     value={customEmail}
                     autoFocus
-                    onChange={(e) => setCustomEmail(e.target.value)}
+                    autoComplete="email"
+                    onChange={(e) => { setCustomEmail(e.target.value); setGoogleError('') }}
                     placeholder="e.g. yourname@example.com"
                     style={{ marginBottom: '8px' }}
                   />
+                  {googleError && (
+                    <div className="host-alert-error" role="alert" style={{ marginBottom: '8px' }}>
+                      {googleError}
+                    </div>
+                  )}
                   <div style={{ display: 'flex', gap: '8px' }}>
                     <button type="submit" className="btn-post-charger" style={{ padding: '8px 14px', fontSize: '0.84rem' }}>
                       Continue
                     </button>
-                    <button
-                      type="button"
-                      className="btn-host-action"
-                      onClick={() => setShowCustomEmail(false)}
-                      style={{ padding: '8px 14px', fontSize: '0.84rem' }}
-                    >
-                      Cancel
-                    </button>
+                    {savedHostAccounts.length > 0 && (
+                      <button
+                        type="button"
+                        className="btn-host-action"
+                        onClick={() => { setShowCustomEmail(false); setGoogleError('') }}
+                        style={{ padding: '8px 14px', fontSize: '0.84rem' }}
+                      >
+                        Cancel
+                      </button>
+                    )}
                   </div>
                 </form>
               )}
@@ -727,7 +770,7 @@ function IdentityGate({ onSubmit, onBack, onBackToHome, isExiting = false }) {
                 <button
                   type="button"
                   className="btn-host-action"
-                  onClick={() => setGoogleModalOpen(false)}
+                  onClick={() => { setGoogleModalOpen(false); setGoogleError(''); setShowCustomEmail(false) }}
                   style={{ fontSize: '0.8rem', padding: '6px 12px' }}
                 >
                   Close
@@ -737,7 +780,7 @@ function IdentityGate({ onSubmit, onBack, onBackToHome, isExiting = false }) {
           </div>
         )}
 
-        <div style={{ marginTop: '24px', paddingTop: '16px', borderTop: '1px solid #e2e8f0' }}>
+        <div className="host-back-divider">
           <button
             type="button"
             className="btn-host-action btn-host-back"
@@ -884,17 +927,6 @@ function Dashboard({ ownerName, onLogout, isExiting = false }) {
             <span className="host-badge-dot" />
             Host: {ownerName}
           </span>
-          <button
-            type="button"
-            className="btn-host-action"
-            onClick={refresh}
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <polyline points="23 4 23 10 17 10" />
-              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
-            </svg>
-            Refresh
-          </button>
           <button
             type="button"
             className="btn-host-action btn-host-logout"

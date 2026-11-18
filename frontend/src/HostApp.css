@@ -771,22 +771,231 @@
 
 /* Identity Gate (Sign-in) */
 .host-gate-wrapper {
+  position: relative;
+  z-index: 10;
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 28px 24px 48px;
-  background: var(--bg, #f8fafc);
+  background: transparent;
 }
 
 .host-gate-card {
   width: min(440px, 100%);
-  background: #ffffff;
-  border: 1px solid var(--border, #e2e8f0);
-  border-radius: 16px;
+  background: rgba(11, 18, 34, 0.78);
+  backdrop-filter: blur(24px) saturate(165%);
+  -webkit-backdrop-filter: blur(24px) saturate(165%);
+  border: 1px solid rgba(52, 211, 153, 0.22);
+  border-radius: 20px;
   padding: 36px 28px;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+  color: #f8fafc;
+  box-shadow:
+    0 28px 64px -16px rgba(2, 6, 23, 0.8),
+    0 0 44px -14px rgba(16, 185, 129, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.09);
   text-align: center;
+  animation: authCardEnter 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.auth-page-shell .host-gate-card h1 {
+  color: #f8fafc;
+}
+
+.auth-page-shell .host-gate-card .gate-badge-icon {
+  background: rgba(16, 185, 129, 0.14);
+  color: #34d399;
+  border: 1px solid rgba(52, 211, 153, 0.34);
+  box-shadow: 0 0 24px rgba(16, 185, 129, 0.22);
+}
+
+.host-auth-subtitle {
+  color: #94a3b8;
+  font-size: 0.88rem;
+  margin: 0 0 20px;
+}
+
+.host-field-label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #cbd5e1;
+  margin-bottom: 6px;
+}
+
+.host-field-label--inline {
+  margin-bottom: 0;
+}
+
+.host-auth-helper {
+  font-size: 0.83rem;
+  color: #94a3b8;
+  margin: 6px 0 0;
+}
+
+.host-alert-error {
+  background: rgba(239, 68, 68, 0.14);
+  border: 1px solid rgba(248, 113, 113, 0.36);
+  color: #fca5a5;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  text-align: left;
+  margin-bottom: 16px;
+}
+
+.host-alert-success {
+  background: rgba(16, 185, 129, 0.14);
+  border: 1px solid rgba(52, 211, 153, 0.36);
+  color: #6ee7b7;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  text-align: left;
+  margin-bottom: 16px;
+}
+
+.host-back-divider {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.auth-page-shell .host-gate-card .host-input {
+  background: rgba(15, 23, 42, 0.86);
+  color: #f8fafc;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 10px;
+  color-scheme: dark;
+  transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.auth-page-shell .host-gate-card .host-input::placeholder {
+  color: #7c8ea6;
+}
+
+.auth-page-shell .host-gate-card .host-input:focus {
+  outline: none;
+  border-color: #34d399;
+  background: rgba(15, 23, 42, 0.96);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.26);
+}
+
+.auth-page-shell .host-gate-card .btn-post-charger {
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+  border: 1px solid rgba(52, 211, 153, 0.42);
+  color: #ffffff;
+  box-shadow: 0 10px 24px -6px rgba(16, 185, 129, 0.52);
+}
+
+.auth-page-shell .host-gate-card .btn-post-charger:hover:not(:disabled) {
+  background: linear-gradient(135deg, #047857 0%, #059669 100%);
+  box-shadow: 0 14px 28px -6px rgba(16, 185, 129, 0.65);
+}
+
+.auth-page-shell .host-gate-card .btn-google-signin {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #f8fafc;
+}
+
+.auth-page-shell .host-gate-card .btn-google-signin:hover {
+  background: rgba(255, 255, 255, 0.11);
+  border-color: rgba(52, 211, 153, 0.42);
+}
+
+.auth-page-shell .host-gate-card .host-auth-divider {
+  color: #94a3b8;
+}
+
+.auth-page-shell .host-gate-card .host-auth-divider::before,
+.auth-page-shell .host-gate-card .host-auth-divider::after {
+  background: rgba(148, 163, 184, 0.22);
+}
+
+.auth-page-shell .host-gate-card .host-auth-link {
+  color: #34d399;
+}
+
+.auth-page-shell .host-gate-card .host-auth-link:hover {
+  color: #6ee7b7;
+}
+
+.auth-page-shell .host-gate-card .btn-demo-host {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #cbd5e1;
+}
+
+.auth-page-shell .host-gate-card .btn-demo-host:hover {
+  background: rgba(16, 185, 129, 0.14);
+  border-color: rgba(52, 211, 153, 0.42);
+  color: #f8fafc;
+}
+
+.auth-page-shell .host-gate-card .btn-host-action,
+.auth-page-shell .host-gate-card .btn-host-action.btn-host-back {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #e2e8f0;
+}
+
+.auth-page-shell .host-gate-card .btn-host-action:hover,
+.auth-page-shell .host-gate-card .btn-host-action.btn-host-back:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(52, 211, 153, 0.38);
+  color: #ffffff;
+}
+
+.auth-page-shell .host-gate-card .google-modal-overlay {
+  background: rgba(2, 6, 23, 0.72);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.auth-page-shell .host-gate-card .google-modal-card {
+  background: rgba(15, 23, 42, 0.94);
+  border: 1px solid rgba(52, 211, 153, 0.22);
+  box-shadow: 0 24px 60px rgba(2, 6, 23, 0.8);
+  color: #f8fafc;
+}
+
+.auth-page-shell .host-gate-card .google-modal-title,
+.auth-page-shell .host-gate-card .google-name {
+  color: #f8fafc;
+}
+
+.auth-page-shell .host-gate-card .google-modal-subtitle,
+.auth-page-shell .host-gate-card .google-email {
+  color: #94a3b8;
+}
+
+.auth-page-shell .host-gate-card .google-account-item {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #f8fafc;
+}
+
+.auth-page-shell .host-gate-card .google-account-item:hover {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(52, 211, 153, 0.42);
+}
+
+.auth-page-shell .host-gate-card .google-avatar-add {
+  background: rgba(255, 255, 255, 0.08);
+  color: #cbd5e1;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.auth-page-shell .host-gate-card .google-custom-input-box {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .host-gate-card {
+    animation: none;
+  }
 }
 
 .gate-badge-icon {

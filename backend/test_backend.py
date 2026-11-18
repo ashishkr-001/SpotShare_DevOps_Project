@@ -238,7 +238,11 @@ def test_close_and_reopen_ev_charger_station():
     # Insights and host insights handle closed station cleanly
     insights_res = client.get("/api/insights")
     assert insights_res.status_code == 200
-    assert insights_res.json()["spot_status_counts"]["closed"] >= 1
+    insights_data = insights_res.json()
+    assert insights_data["spot_status_counts"]["closed"] >= 1
+    assert insights_data["summary"]["active_spots"] == (
+        insights_data["summary"]["total_spots"] - insights_data["spot_status_counts"]["closed"]
+    )
 
     host_insights_res = client.get("/api/host/insights?owner_name=OutOfTownHost")
     assert host_insights_res.status_code == 200

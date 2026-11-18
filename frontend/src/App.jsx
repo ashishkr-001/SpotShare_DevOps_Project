@@ -7,6 +7,7 @@ import SmartInsights from './components/SmartInsights.jsx'
 import SpotShareLogo from './components/SpotShareLogo.jsx'
 import PasswordInput from './components/PasswordInput.jsx'
 import AuthTopBar from './components/AuthTopBar.jsx'
+import ShaderBackdrop from './components/ShaderBackdrop.jsx'
 import HostApp from './HostApp.jsx'
 import LandingPage from './components/LandingPage.jsx'
 
@@ -316,34 +317,31 @@ const FALLBACK_SPOTS = [
   },
 ]
 
-// Initial demo credentials
-const INITIAL_REGISTERED_USERS = [
-  {
-    name: 'Ashish Kumar',
-    email: 'ashish@example.com',
-    password: 'password123',
-    vehicle: 'car',
-  },
-]
+const DEMO_CUSTOMER_EMAILS = new Set(['ashish@example.com', 'aryan@example.com'])
+const DEMO_USER_PURGE_KEY = 'spotshare_demo_users_purged_v1'
 
 function getStoredUsers() {
   try {
     const raw = localStorage.getItem('spotshare_registered_users')
     if (raw) {
       const parsed = JSON.parse(raw)
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        const filtered = parsed.filter((u) => u.email !== 'aryan@example.com')
-        const hasAshish = filtered.some((u) => u.email === 'ashish@example.com')
-        if (!hasAshish) {
-          filtered.unshift(INITIAL_REGISTERED_USERS[0])
+      if (Array.isArray(parsed)) {
+        if (!localStorage.getItem(DEMO_USER_PURGE_KEY)) {
+          const cleaned = parsed.filter(
+            (u) => !DEMO_CUSTOMER_EMAILS.has(String(u?.email || '').trim().toLowerCase())
+          )
+          localStorage.setItem('spotshare_registered_users', JSON.stringify(cleaned))
+          localStorage.setItem(DEMO_USER_PURGE_KEY, '1')
+          return cleaned
         }
-        return filtered
+        return parsed
       }
     }
+    localStorage.setItem(DEMO_USER_PURGE_KEY, '1')
   } catch {
     /* ignore */
   }
-  return INITIAL_REGISTERED_USERS
+  return []
 }
 
 function saveStoredUsers(users) {
@@ -470,6 +468,7 @@ function AuthScreen({ onLogin, initialTab = 'login', onBackToHome = null, isExit
   const [showCustomEmail, setShowCustomEmail] = useState(false)
   const [customEmail, setCustomEmail] = useState('')
   const [googleError, setGoogleError] = useState('')
+  const savedCustomerAccounts = googleModalOpen ? getStoredUsers().filter((u) => u.email) : []
 
   const [forgotIdentifier, setForgotIdentifier] = useState('')
   const [forgotAccount, setForgotAccount] = useState(null)
@@ -541,16 +540,6 @@ function AuthScreen({ onLogin, initialTab = 'login', onBackToHome = null, isExit
       return
     }
 
-    onLogin(user)
-  }
-
-  const handleDemoLogin = (demo) => {
-    const users = getStoredUsers()
-    let user = users.find((u) => u.email === demo.email)
-    if (!user) {
-      user = demo
-      saveStoredUsers([...users, user])
-    }
     onLogin(user)
   }
 
@@ -736,6 +725,7 @@ function AuthScreen({ onLogin, initialTab = 'login', onBackToHome = null, isExit
 
   return (
     <div className={`auth-page-shell ${isExiting ? 'is-leaving' : ''}`}>
+      <ShaderBackdrop mode="parking" />
       <AuthTopBar
         mode="customer"
         onSwitchMode={() => { setTab('host'); setError(''); setSuccessMsg('') }}
@@ -820,7 +810,7 @@ function AuthScreen({ onLogin, initialTab = 'login', onBackToHome = null, isExit
               Sign In
             </button>
 
-            <p style={{ fontSize: '0.83rem', color: '#64748b', margin: '12px 0 0', textAlign: 'center' }}>
+            <p className="auth-helper-text">
               New customer?
               <button
                 type="button"
@@ -889,7 +879,7 @@ function AuthScreen({ onLogin, initialTab = 'login', onBackToHome = null, isExit
               Create Account
             </button>
 
-            <p style={{ fontSize: '0.83rem', color: '#64748b', margin: '12px 0 0', textAlign: 'center' }}>
+            <p className="auth-helper-text">
               Already registered?
               <button
                 type="button"
@@ -902,7 +892,7 @@ function AuthScreen({ onLogin, initialTab = 'login', onBackToHome = null, isExit
           </form>
         ) : !forgotAccount ? (
           <form onSubmit={handleForgotLookup} noValidate>
-            <h3 style={{ margin: '0 0 4px', fontSize: '1.02rem', color: '#0f172a' }}>Reset Password</h3>
+            <h3 style={{ margin: '0 0 4px', fontSize: '1.02rem' }}>Reset Password</h3>
             <p className="muted small" style={{ margin: '0 0 14px' }}>
               Enter your registered email or name to generate a verification code.
             </p>
@@ -924,7 +914,7 @@ function AuthScreen({ onLogin, initialTab = 'login', onBackToHome = null, isExit
               {forgotBusy ? 'Sending code to email…' : 'Send Verification Code'}
             </button>
 
-            <p style={{ fontSize: '0.83rem', color: '#64748b', margin: '12px 0 0', textAlign: 'center' }}>
+            <p className="auth-helper-text">
               Remember your password?
               <button
                 type="button"
@@ -993,7 +983,7 @@ function AuthScreen({ onLogin, initialTab = 'login', onBackToHome = null, isExit
               {forgotBusy ? 'Verifying & updating…' : 'Update Password'}
             </button>
 
-            <p style={{ fontSize: '0.83rem', color: '#64748b', margin: '12px 0 0', textAlign: 'center' }}>
+            <p className="auth-helper-text">
               <button
                 type="button"
                 className="customer-auth-link"
@@ -1013,29 +1003,6 @@ function AuthScreen({ onLogin, initialTab = 'login', onBackToHome = null, isExit
           </form>
         )}
 
-        {tab === 'login' && (
-          <div className="demo-chips" style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <button
-              type="button"
-              className="chip-btn"
-              onClick={() =>
-                handleDemoLogin({
-                  name: 'Ashish Kumar',
-                  email: 'ashish@example.com',
-                  password: 'password123',
-                  vehicle: 'car',
-                })
-              }
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '6px' }}>
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                <circle cx="12" cy="7" r="4" />
-              </svg>
-              Quick Demo Sign-In: Ashish Kumar
-            </button>
-          </div>
-        )}
-
         {/* Google Account Selector Modal */}
         {googleModalOpen && (
           <div className="auth-google-modal-overlay" onClick={closeGoogleModal}>
@@ -1049,28 +1016,35 @@ function AuthScreen({ onLogin, initialTab = 'login', onBackToHome = null, isExit
                 </svg>
                 <h3 id="customer-google-title" className="auth-google-modal-title">Sign in with Google</h3>
               </div>
-              <p className="auth-google-modal-subtitle">Choose an account to continue to SpotShare</p>
+              <p className="auth-google-modal-subtitle">
+                {savedCustomerAccounts.length > 0
+                  ? 'Choose an account to continue to SpotShare'
+                  : 'Enter your email address to continue to SpotShare'}
+              </p>
 
-              <button
-                type="button"
-                className="auth-google-account-item"
-                onClick={() => handleGoogleSelect('Ashish Kumar', 'ashish@example.com')}
-              >
-                <div className="auth-google-avatar">A</div>
-                <div className="auth-google-account-info">
-                  <span className="auth-google-name">Ashish Kumar</span>
-                  <span className="auth-google-email">ashish@example.com</span>
-                </div>
-              </button>
+              {savedCustomerAccounts.map((acc) => (
+                <button
+                  key={acc.email}
+                  type="button"
+                  className="auth-google-account-item"
+                  onClick={() => handleGoogleSelect(acc.name || acc.email, acc.email)}
+                >
+                  <div className="auth-google-avatar">{(acc.name?.[0] || acc.email?.[0] || 'U').toUpperCase()}</div>
+                  <div className="auth-google-account-info">
+                    <span className="auth-google-name">{acc.name}</span>
+                    <span className="auth-google-email">{acc.email}</span>
+                  </div>
+                </button>
+              ))}
 
-              {!showCustomEmail ? (
+              {savedCustomerAccounts.length > 0 && !showCustomEmail ? (
                 <button
                   type="button"
                   className="auth-google-account-item"
                   onClick={() => { setShowCustomEmail(true); setGoogleError('') }}
                   style={{ borderStyle: 'dashed' }}
                 >
-                  <div className="auth-google-avatar" style={{ background: '#f1f5f9', color: '#64748b' }}>+</div>
+                  <div className="auth-google-avatar auth-google-avatar-add">+</div>
                   <div className="auth-google-account-info">
                     <span className="auth-google-name">Use another Email account</span>
                     <span className="auth-google-email">Sign in with a different email</span>
@@ -1078,10 +1052,11 @@ function AuthScreen({ onLogin, initialTab = 'login', onBackToHome = null, isExit
                 </button>
               ) : (
                 <form onSubmit={handleCustomGoogleSubmit} className="auth-google-custom-box" noValidate>
-                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
+                  <label htmlFor="customer-google-custom-email" className="auth-modal-label">
                     Enter Email Address
                   </label>
                   <input
+                    id="customer-google-custom-email"
                     type="email"
                     className="auth-google-input"
                     value={customEmail}
@@ -1098,14 +1073,16 @@ function AuthScreen({ onLogin, initialTab = 'login', onBackToHome = null, isExit
                     <button type="submit" className="btn btn-primary" style={{ padding: '8px 14px', fontSize: '0.84rem', flex: 1 }}>
                       Continue
                     </button>
-                    <button
-                      type="button"
-                      className="btn btn-ghost"
-                      onClick={() => { setShowCustomEmail(false); setGoogleError('') }}
-                      style={{ padding: '8px 14px', fontSize: '0.84rem' }}
-                    >
-                      Cancel
-                    </button>
+                    {savedCustomerAccounts.length > 0 && (
+                      <button
+                        type="button"
+                        className="btn btn-ghost"
+                        onClick={() => { setShowCustomEmail(false); setGoogleError('') }}
+                        style={{ padding: '8px 14px', fontSize: '0.84rem' }}
+                      >
+                        Cancel
+                      </button>
+                    )}
                   </div>
                 </form>
               )}

@@ -884,6 +884,7 @@ def get_insights(conn: sqlite3.Connection) -> Dict[str, Any]:
         "timezone": TIMEZONE_LABEL,
         "summary": {
             "total_spots": len(spots),
+            "active_spots": len(open_spots),
             "total_capacity": total_capacity,
             "available_spaces": free,
             "occupied_or_reserved_spaces": used,

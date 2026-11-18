@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SpotShare — Hyperlocal EV Charging & Smart Parking Network</title>
+  <title>SpotShare — Hyperlocal EV Charging &amp; Smart Parking Network</title>
   <meta name="description" content="SpotShare connects EV drivers and commuters with verified parking bays and fast chargers across Mysuru. Instant booking, guaranteed bays, and host monetization.">
   <meta name="theme-color" content="#070a12">
 
@@ -11,7 +11,6 @@
   <meta property="og:title" content="SpotShare — Hyperlocal EV Charging & Smart Parking Network">
   <meta property="og:description" content="Find, reserve, and navigate to verified parking spaces and high-speed EV chargers in real time.">
   <meta property="og:type" content="website">
-  <meta property="og:image" content="https://spotshare.network/og-card.png">
   <meta name="twitter:card" content="summary_large_image">
 
   <!-- Preconnect Google Fonts: Plus Jakarta Sans + JetBrains Mono -->
@@ -24,7 +23,6 @@
        1. DESIGN TOKENS & RESET
        ═══════════════════════════════════════════════════════════════════════ */
     :root {
-      /* Palette */
       --color-void: #060913;
       --color-surface: #0b1120;
       --color-surface-elevated: #111a2e;
@@ -37,7 +35,6 @@
       --color-text-secondary: #94a3b8;
       --color-text-muted: #64748b;
 
-      /* Electric & Cyber Accents */
       --color-blue-primary: #2563eb;
       --color-blue-glow: #3b82f6;
       --color-blue-subtle: rgba(37, 99, 235, 0.15);
@@ -50,17 +47,14 @@
       --color-rose-danger: #f43f5e;
       --color-cyan-beam: #06b6d4;
 
-      /* Typography Scale (Tailwind standard) */
       --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       --font-mono: 'JetBrains Mono', monospace;
 
-      /* Base Animation Curve */
       --ease-base: cubic-bezier(0.22, 1, 0.36, 1);
       --duration-fast: 200ms;
       --duration-normal: 350ms;
       --duration-slow: 600ms;
 
-      /* Spacing Tokens */
       --space-2: 8px;
       --space-3: 12px;
       --space-4: 16px;
@@ -70,7 +64,6 @@
       --space-16: 64px;
       --space-24: 96px;
 
-      /* Radii */
       --radius-sm: 6px;
       --radius-md: 10px;
       --radius-lg: 16px;
@@ -101,7 +94,6 @@
       position: relative;
     }
 
-    /* Skip Link for Accessibility */
     .skip-to-content {
       position: absolute;
       top: -60px;
@@ -135,7 +127,6 @@
       transition: opacity var(--duration-slow) var(--ease-base);
     }
 
-    /* SVG Grain & Film Scanline Dithering Texture Overlay */
     .film-grain-overlay {
       position: fixed;
       top: 0;
@@ -154,7 +145,6 @@
       width: 100%;
     }
 
-    /* Container constraints */
     .container {
       width: 100%;
       max-width: 1240px;
@@ -229,12 +219,19 @@
       background: var(--color-emerald-subtle);
       color: var(--color-emerald-glow);
       border: 1px solid rgba(16, 185, 129, 0.3);
-      padding: 2px 7px;
+      padding: 2px 8px;
       border-radius: var(--radius-full);
       font-weight: 600;
       display: inline-flex;
       align-items: center;
-      gap: 4px;
+      gap: 5px;
+      white-space: nowrap;
+    }
+
+    .brand-badge.offline {
+      background: rgba(245, 158, 11, 0.14);
+      color: #fbbf24;
+      border-color: rgba(245, 158, 11, 0.35);
     }
 
     .pulse-dot {
@@ -243,6 +240,9 @@
       background: var(--color-emerald-primary);
       border-radius: 50%;
       animation: pulse-beacon 2s infinite ease-in-out;
+    }
+    .brand-badge.offline .pulse-dot {
+      background: #f59e0b;
     }
 
     @keyframes pulse-beacon {
@@ -253,14 +253,14 @@
     .nav-links {
       display: flex;
       align-items: center;
-      gap: var(--space-6);
+      gap: var(--space-4);
       list-style: none;
     }
 
     .nav-link {
       color: var(--color-text-secondary);
       text-decoration: none;
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       font-weight: 500;
       transition: color var(--duration-fast) var(--ease-base);
     }
@@ -306,13 +306,39 @@
       font-weight: 700;
     }
 
+    .nav-portal-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-nav-ghost {
+      background: rgba(255, 255, 255, 0.06);
+      color: #e2e8f0;
+      border: 1px solid var(--color-border-subtle);
+      border-radius: var(--radius-md);
+      padding: 8px 12px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      font-family: var(--font-sans);
+      text-decoration: none;
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--ease-base);
+      white-space: nowrap;
+    }
+    .btn-nav-ghost:hover {
+      background: rgba(255, 255, 255, 0.14);
+      border-color: var(--color-border-strong);
+      color: #ffffff;
+    }
+
     .btn-nav-action {
       background: #ffffff;
       color: #060913;
       border: none;
       border-radius: var(--radius-md);
       padding: 8px 16px;
-      font-size: 0.85rem;
+      font-size: 0.84rem;
       font-weight: 700;
       font-family: var(--font-sans);
       text-decoration: none;
@@ -321,6 +347,7 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
+      white-space: nowrap;
     }
     .btn-nav-action:hover {
       transform: translateY(-1px);
@@ -360,22 +387,23 @@
     }
 
     .hero-heading {
-      font-size: clamp(2.75rem, 6.5vw, 5.5rem);
+      font-size: clamp(2.5rem, 6vw, 5.2rem);
       line-height: 1.04;
       font-weight: 800;
       letter-spacing: -0.035em;
       max-width: 960px;
       margin: 0 auto var(--space-6) auto;
       text-wrap: balance;
-      /* Left-to-right gradient on dark theme per design guidelines */
       background: linear-gradient(135deg, #ffffff 15%, #cbd5e1 55%, #64748b 100%);
       -webkit-background-clip: text;
+      background-clip: text;
       -webkit-text-fill-color: transparent;
     }
 
     .hero-heading span.accent-highlight {
       background: linear-gradient(135deg, #60a5fa 0%, #34d399 100%);
       -webkit-background-clip: text;
+      background-clip: text;
       -webkit-text-fill-color: transparent;
     }
 
@@ -388,7 +416,6 @@
       text-wrap: pretty;
     }
 
-    /* Search & Filter Bar Container */
     .hero-control-card {
       background: rgba(17, 26, 46, 0.85);
       backdrop-filter: blur(20px);
@@ -475,7 +502,6 @@
       transform: translateY(1px);
     }
 
-    /* Live Telemetry Bar */
     .telemetry-strip {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -511,7 +537,7 @@
     }
 
     /* ═══════════════════════════════════════════════════════════════════════
-       5. INTERACTIVE LIVE SPOT EXPLORER (GRID & DRAWER)
+       5. INTERACTIVE LIVE SPOT EXPLORER
        ═══════════════════════════════════════════════════════════════════════ */
     .section-spacious {
       padding: var(--space-24) 0;
@@ -553,6 +579,7 @@
       display: flex;
       gap: var(--space-2);
       flex-wrap: wrap;
+      align-items: center;
     }
 
     .chip-btn {
@@ -577,15 +604,14 @@
       border-color: #ffffff;
     }
 
-    /* Spot Cards Grid */
     .spots-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
       gap: var(--space-6);
     }
 
     .spot-card {
-      background: rgba(17, 26, 46, 0.7);
+      background: rgba(17, 26, 46, 0.72);
       backdrop-filter: blur(12px);
       border: 1px solid var(--color-border-subtle);
       border-radius: var(--radius-xl);
@@ -600,6 +626,10 @@
       transform: translateY(-4px);
       border-color: rgba(59, 130, 246, 0.4);
       box-shadow: 0 16px 36px -10px rgba(0, 0, 0, 0.6), 0 0 20px rgba(37, 99, 235, 0.15);
+    }
+
+    .spot-card.is-closed {
+      opacity: 0.72;
     }
 
     .spot-card-media {
@@ -625,6 +655,7 @@
       left: 12px;
       display: flex;
       gap: 6px;
+      flex-wrap: wrap;
     }
 
     .badge-status {
@@ -637,13 +668,18 @@
     }
 
     .badge-status.available {
-      background: rgba(16, 185, 129, 0.85);
+      background: rgba(16, 185, 129, 0.88);
       color: #060913;
       font-weight: 700;
     }
     .badge-status.ev-fast {
-      background: rgba(6, 182, 212, 0.85);
+      background: rgba(6, 182, 212, 0.88);
       color: #060913;
+      font-weight: 700;
+    }
+    .badge-status.closed {
+      background: rgba(244, 63, 94, 0.88);
+      color: #ffffff;
       font-weight: 700;
     }
 
@@ -679,6 +715,7 @@
       margin-bottom: var(--space-4);
       font-size: 0.8rem;
       color: var(--color-text-secondary);
+      flex-wrap: wrap;
     }
 
     .spec-item {
@@ -693,6 +730,7 @@
       justify-content: space-between;
       margin-top: auto;
       padding-top: var(--space-2);
+      gap: 10px;
     }
 
     .spot-price-tag {
@@ -708,7 +746,7 @@
     }
 
     .spot-price-sub {
-      font-size: 0.7rem;
+      font-size: 0.72rem;
       color: var(--color-text-muted);
     }
 
@@ -724,12 +762,27 @@
       font-family: var(--font-sans);
       transition: background var(--duration-fast) var(--ease-base);
     }
-    .btn-book-spot:hover {
+    .btn-book-spot:hover:not(:disabled) {
       background: var(--color-blue-glow);
+    }
+    .btn-book-spot:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      background: #334155;
+    }
+
+    .empty-stations-card {
+      grid-column: 1 / -1;
+      background: rgba(17, 26, 46, 0.7);
+      border: 1px solid var(--color-border-subtle);
+      border-radius: var(--radius-xl);
+      padding: var(--space-12);
+      text-align: center;
+      color: var(--color-text-secondary);
     }
 
     /* ═══════════════════════════════════════════════════════════════════════
-       6. MANDATORY TAGLINE REVEAL SECTION (Per landing-page-design B11)
+       6. MANDATORY TAGLINE REVEAL SECTION
        ═══════════════════════════════════════════════════════════════════════ */
     .tagline-reveal-section {
       padding: var(--space-24) 0;
@@ -759,7 +812,6 @@
       text-wrap: balance;
     }
 
-    /* Word-by-word reveal style */
     .reveal-word {
       display: inline-block;
       color: rgba(255, 255, 255, 0.22);
@@ -904,7 +956,6 @@
       margin-top: 4px;
     }
 
-    /* Host Controls Demo Toggle */
     .host-toggle-row {
       display: flex;
       align-items: center;
@@ -978,6 +1029,10 @@
       cursor: pointer;
       font-family: var(--font-sans);
     }
+    .btn-sim-action:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
 
     .sim-sensor-viz {
       background: #060913;
@@ -1011,7 +1066,6 @@
       color: var(--color-emerald-glow);
     }
 
-    /* FAQ Accordion */
     .faq-wrapper {
       max-width: 820px;
       margin: 0 auto;
@@ -1088,10 +1142,13 @@
       background: #ffffff;
       color: #060913;
       padding: 12px 28px;
+      border: none;
       border-radius: var(--radius-md);
       font-weight: 700;
       font-size: 1rem;
+      font-family: var(--font-sans);
       text-decoration: none;
+      cursor: pointer;
       transition: transform var(--duration-fast) var(--ease-base);
       display: inline-flex;
       align-items: center;
@@ -1110,15 +1167,19 @@
       border-radius: var(--radius-md);
       font-weight: 600;
       font-size: 1rem;
+      font-family: var(--font-sans);
       text-decoration: none;
+      cursor: pointer;
       transition: all var(--duration-fast) var(--ease-base);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
     }
     .btn-cta-secondary:hover {
       background: rgba(255, 255, 255, 0.15);
       border-color: #ffffff;
     }
 
-    /* Footer */
     .site-footer {
       border-top: 1px solid var(--color-border-subtle);
       padding: var(--space-16) 0 var(--space-8) 0;
@@ -1164,10 +1225,12 @@
       padding-top: var(--space-8);
       border-top: 1px solid rgba(255, 255, 255, 0.05);
       font-size: 0.78rem;
+      flex-wrap: wrap;
+      gap: 10px;
     }
 
     /* ═══════════════════════════════════════════════════════════════════════
-       10. BOOKING MODAL (INTERACTIVE OVERLAY)
+       10. BOOKING MODAL (INTEGRATED WITH POST /api/bookings)
        ═══════════════════════════════════════════════════════════════════════ */
     .modal-backdrop {
       position: fixed;
@@ -1195,6 +1258,8 @@
       padding: var(--space-8);
       box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.9);
       position: relative;
+      max-height: 92vh;
+      overflow-y: auto;
     }
 
     .modal-close-btn {
@@ -1205,11 +1270,55 @@
       border: none;
       color: var(--color-text-muted);
       cursor: pointer;
-      font-size: 1.25rem;
+      font-size: 1.4rem;
+      line-height: 1;
+    }
+    .modal-close-btn:hover {
+      color: #ffffff;
+    }
+
+    .modal-form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .modal-input {
+      width: 100%;
+      background: #111a2e;
+      color: #ffffff;
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--color-border-subtle);
+      font-family: var(--font-sans);
+      font-size: 0.88rem;
+      outline: none;
+    }
+    .modal-input:focus {
+      border-color: var(--color-blue-glow);
+    }
+
+    .modal-feedback {
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      font-size: 0.84rem;
+      margin-top: 12px;
+      line-height: 1.5;
+    }
+    .modal-feedback.success {
+      background: rgba(16, 185, 129, 0.14);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      color: #a7f3d0;
+    }
+    .modal-feedback.error {
+      background: rgba(244, 63, 94, 0.14);
+      border: 1px solid rgba(244, 63, 94, 0.35);
+      color: #fda4af;
     }
 
     /* ═══════════════════════════════════════════════════════════════════════
-       11. RESPONSIVE BREAKPOINTS (Per guidelines 390px, 768px, 1024px)
+       11. RESPONSIVE BREAKPOINTS
        ═══════════════════════════════════════════════════════════════════════ */
     @media (max-width: 1024px) {
       .host-hub-grid {
@@ -1217,6 +1326,9 @@
       }
       .footer-grid {
         grid-template-columns: 1fr 1fr;
+      }
+      .nav-links {
+        display: none;
       }
     }
 
@@ -1230,8 +1342,11 @@
       .simulator-card {
         grid-template-columns: 1fr;
       }
-      .nav-links {
-        display: none; /* Mobile menu can toggle */
+      .modal-form-grid {
+        grid-template-columns: 1fr;
+      }
+      .btn-nav-ghost {
+        display: none;
       }
     }
 
@@ -1243,11 +1358,16 @@
         grid-template-columns: 1fr;
       }
       .hero-heading {
-        font-size: 2.35rem;
+        font-size: 2.2rem;
+      }
+      .site-nav {
+        padding: 8px 12px;
+      }
+      .brand-badge {
+        display: none;
       }
     }
 
-    /* Accessibility: Reduced Motion */
     @media (prefers-reduced-motion: reduce) {
       #shader-stage {
         display: none;
@@ -1265,13 +1385,9 @@
 </head>
 <body>
 
-  <!-- Skip link for keyboard users -->
   <a href="#main-content" class="skip-to-content">Skip to main content</a>
 
-  <!-- Full-Screen Interactive WebGL Canvas Shader Stage -->
   <canvas id="shader-stage" aria-hidden="true"></canvas>
-
-  <!-- High-Frequency Bayer Film Dither Overlay -->
   <div class="film-grain-overlay" aria-hidden="true"></div>
 
   <div class="app-scroller">
@@ -1285,35 +1401,37 @@
             <svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
           </div>
           <span>SpotShare</span>
-          <span class="brand-badge">
-            <span class="pulse-dot"></span> 16 Live Hubs
+          <span class="brand-badge" id="live-hub-badge">
+            <span class="pulse-dot"></span>
+            <span id="live-hub-text">Connecting...</span>
           </span>
         </a>
 
-        <!-- Interactive Mode Switcher (Parking vs EV) -->
         <div class="mode-switch-pill" role="radiogroup" aria-label="Marketplace Mode">
-          <button class="mode-btn active-parking" id="mode-btn-parking" role="radio" aria-checked="true" onclick="setAppMode('parking')">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M6 3h7a5 5 0 0 1 5 5 5 5 0 0 1-5 5H10v8H6V3zm4 4v3h3a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1h-3z"/></svg>
+          <button type="button" class="mode-btn active-parking" id="mode-btn-parking" role="radio" aria-checked="true" onclick="setAppMode('parking')">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 3h7a5 5 0 0 1 5 5 5 5 0 0 1-5 5H10v8H6V3zm4 4v3h3a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1h-3z"/></svg>
             Parking
           </button>
-          <button class="mode-btn" id="mode-btn-ev" role="radio" aria-checked="false" onclick="setAppMode('ev')">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          <button type="button" class="mode-btn" id="mode-btn-ev" role="radio" aria-checked="false" onclick="setAppMode('ev')">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
             EV Charging
           </button>
         </div>
 
         <ul class="nav-links">
           <li><a href="#network" class="nav-link">Network</a></li>
-          <li><a href="#tagline" class="nav-link">Mission</a></li>
           <li><a href="#host-hub" class="nav-link">Host Hub</a></li>
           <li><a href="#simulator" class="nav-link">Barrier API</a></li>
           <li><a href="#faq" class="nav-link">FAQ</a></li>
         </ul>
 
-        <button class="btn-nav-action" onclick="scrollToNetwork()">
-          <span>Find a Spot</span>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </button>
+        <div class="nav-portal-actions">
+          <a href="/host.html" class="btn-nav-ghost" data-portal-path="/host.html">Host Portal</a>
+          <a href="/" class="btn-nav-action" data-portal-path="/">
+            <span>Open App</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </a>
+        </div>
       </nav>
     </div>
 
@@ -1325,8 +1443,8 @@
       <!-- HERO SECTION -->
       <section class="hero-section container" aria-labelledby="hero-title">
         <div class="hero-eyebrow">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20M2 12h20"/></svg>
-          Mysuru Hyperlocal Grid Active &bull; 0.4s Instant Reservations
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20M2 12h20"/></svg>
+          <span id="hero-eyebrow-text">Mysuru Hyperlocal Grid &bull; Live FastAPI + SQLite Sync</span>
         </div>
 
         <h1 class="hero-heading" id="hero-title">
@@ -1343,13 +1461,14 @@
         <div class="hero-control-card">
           <form class="hero-filter-form" onsubmit="handleHeroSearch(event)">
             <div class="filter-input-group">
-              <label class="filter-label" for="search-location">Destination or Hub</label>
-              <input type="text" id="search-location" class="filter-field" placeholder="e.g. Mysuru Palace, Gokulam..." value="Mysuru Central">
+              <label class="filter-label" for="search-location">Destination or Area</label>
+              <input type="text" id="search-location" class="filter-field" placeholder="e.g. Mysuru Palace, Gokulam, Mall...">
             </div>
 
             <div class="filter-input-group">
               <label class="filter-label" for="vehicle-select">Vehicle Type</label>
-              <select id="vehicle-select" class="filter-field">
+              <select id="vehicle-select" class="filter-field" onchange="renderStations(currentStationFilter)">
+                <option value="all">All Vehicles</option>
                 <option value="car">Car (4-Wheeler)</option>
                 <option value="bike">Bike (2-Wheeler)</option>
                 <option value="van">Van / SUV</option>
@@ -1357,39 +1476,39 @@
             </div>
 
             <div class="filter-input-group">
-              <label class="filter-label" for="duration-select">Duration</label>
+              <label class="filter-label" for="duration-select">Default Window</label>
               <select id="duration-select" class="filter-field">
                 <option value="1">1 Hour</option>
                 <option value="2" selected>2 Hours</option>
-                <option value="4">4 Hours</option>
-                <option value="8">Full Day</option>
+                <option value="3">3 Hours</option>
+                <option value="5">5 Hours</option>
               </select>
             </div>
 
             <button type="submit" class="btn-hero-search">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
               <span>Explore Bays</span>
             </button>
           </form>
         </div>
 
-        <!-- Telemetry Strip -->
+        <!-- Live Telemetry Strip (Hydrated from /api/insights & /api/spots) -->
         <div class="telemetry-strip">
           <div class="telemetry-card">
-            <span class="telemetry-number" id="tele-bays">184</span>
+            <span class="telemetry-number" id="tele-bays">--</span>
             <span class="telemetry-label">Available Bays Now</span>
           </div>
           <div class="telemetry-card">
-            <span class="telemetry-number">380 kW</span>
-            <span class="telemetry-label">Active Fast-Charge Output</span>
+            <span class="telemetry-number" id="tele-ev-power">--</span>
+            <span class="telemetry-label">EV Charger Capacity</span>
           </div>
           <div class="telemetry-card">
-            <span class="telemetry-number">&lt; 120 ms</span>
-            <span class="telemetry-label">Barrier Gate Response</span>
+            <span class="telemetry-number" id="tele-hubs">--</span>
+            <span class="telemetry-label">Active Mysuru Locations</span>
           </div>
           <div class="telemetry-card">
-            <span class="telemetry-number">&#8377;30/hr</span>
-            <span class="telemetry-label">Starting Hourly Rate</span>
+            <span class="telemetry-number" id="tele-rate">--</span>
+            <span class="telemetry-label">Lowest Open Hourly Rate</span>
           </div>
         </div>
       </section>
@@ -1398,25 +1517,24 @@
       <section class="section-spacious container" id="network" aria-labelledby="spots-heading">
         <div class="section-header">
           <div class="section-title-wrap">
-            <span class="section-tag">// Verified Live Stations</span>
+            <span class="section-tag">// Live SQLite Station Feed</span>
             <h2 class="section-heading" id="spots-heading">Explore live stations near you.</h2>
           </div>
 
           <div class="filter-chips" role="group" aria-label="Filter stations">
-            <button class="chip-btn active" onclick="filterStations('all', this)">All Stations</button>
-            <button class="chip-btn" onclick="filterStations('fast-ev', this)">DC Fast (50kW+)</button>
-            <button class="chip-btn" onclick="filterStations('type2', this)">Type 2 AC</button>
-            <button class="chip-btn" onclick="filterStations('private', this)">Private Host Driveways</button>
+            <button type="button" class="chip-btn active" data-filter="all" onclick="filterStations('all', this)">All Stations</button>
+            <button type="button" class="chip-btn" data-filter="parking" onclick="filterStations('parking', this)">Parking Lots</button>
+            <button type="button" class="chip-btn" data-filter="fast-ev" onclick="filterStations('fast-ev', this)">DC Fast (20kW+)</button>
+            <button type="button" class="chip-btn" data-filter="ev" onclick="filterStations('ev', this)">All EV Chargers</button>
+            <button type="button" class="chip-btn" data-filter="private" onclick="filterStations('private', this)">Private Hosts</button>
+            <button type="button" class="chip-btn" id="btn-gps" onclick="detectUserGps(this)" title="Sort distance from your current GPS">Use My GPS</button>
           </div>
         </div>
 
-        <!-- Dynamic Station Cards -->
-        <div class="spots-grid" id="stations-container">
-          <!-- Populated dynamically via JS with realistic seed data -->
-        </div>
+        <div class="spots-grid" id="stations-container"></div>
       </section>
 
-      <!-- MANDATORY TAGLINE REVEAL SECTION (Per landing-page-design B11) -->
+      <!-- MANDATORY TAGLINE REVEAL SECTION -->
       <section class="tagline-reveal-section container" id="tagline" aria-label="Mission Statement">
         <div class="tagline-reveal-box">
           <div class="tagline-lead">// Zero Empty Miles</div>
@@ -1430,59 +1548,58 @@
       <section class="host-hub-section container" id="host-hub" aria-labelledby="host-heading">
         <div class="host-hub-grid">
           <div class="host-content-block">
-            <span class="section-tag">// Private & Commercial Hosts</span>
-            <h2 class="section-heading" id="host-heading">Monetize idle bays. Power the clean transit revolution.</h2>
+            <span class="section-tag">// Private &amp; Commercial Hosts</span>
+            <h2 class="section-heading" id="host-heading">Monetize idle bays. Power clean urban transit.</h2>
             <p style="color: var(--color-text-secondary); margin-top: 14px; font-size: 1.05rem;">
-              Own a private charger, apartment slot, or retail parking lot? List your space on SpotShare in under three minutes, automate client check-in via our software barrier API, and receive daily automated UPI payouts.
+              Own a private charger, apartment slot, or retail parking lot? Publish your station on the SpotShare Host Hub in minutes, track real-time occupancy, and pause availability anytime without deleting your listing.
             </p>
 
             <ul class="feature-points-list">
               <li class="feature-point">
                 <div class="feature-icon-box">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
                 </div>
                 <div>
-                  <strong style="color: #ffffff;">Temporary Vacation Mode</strong>
-                  <p style="font-size: 0.85rem; color: var(--color-text-secondary);">Turn off/close your station when travelling without losing historical reviews or listing ranking.</p>
+                  <strong style="color: #ffffff;">Temporary Turn Off / Close Mode</strong>
+                  <p style="font-size: 0.85rem; color: var(--color-text-secondary);">Pause bookings when out of town (<code>PATCH /api/spots/{id}/status</code>) while preserving reviews and booking history.</p>
                 </div>
               </li>
               <li class="feature-point">
                 <div class="feature-icon-box">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
                 </div>
                 <div>
-                  <strong style="color: #ffffff;">Authoritative Anti-Clash Booking</strong>
-                  <p style="font-size: 0.85rem; color: var(--color-text-secondary);">Server-side atomic interval locks prevent double bookings on identical time windows.</p>
+                  <strong style="color: #ffffff;">Atomic Anti-Clash Reservations</strong>
+                  <p style="font-size: 0.85rem; color: var(--color-text-secondary);">SQLite <code>BEGIN IMMEDIATE</code> locks prevent double bookings across overlapping <code>[start, end)</code> time windows.</p>
                 </div>
               </li>
               <li class="feature-point">
                 <div class="feature-icon-box">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
                 </div>
                 <div>
-                  <strong style="color: #ffffff;">Real-time Telemetry & Invoicing</strong>
-                  <p style="font-size: 0.85rem; color: var(--color-text-secondary);">Live occupancy percentages, revenue graphs, and automated GST-compliant digital vouchers.</p>
+                  <strong style="color: #ffffff;">Live Host Analytics &amp; Insights</strong>
+                  <p style="font-size: 0.85rem; color: var(--color-text-secondary);">Real-time bay occupancy, revenue totals, and instant email booking confirmations.</p>
                 </div>
               </li>
             </ul>
 
-            <button class="btn-nav-action" onclick="openHostModal()">
-              <span>Register as a Host</span>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </button>
+            <a href="/host.html" class="btn-nav-action" data-portal-path="/host.html">
+              <span>Open SpotShare Host Hub</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
           </div>
 
-          <!-- Interactive Calculator -->
           <div class="calculator-card">
             <h3>Host Revenue Estimator</h3>
-            <p class="calc-desc">Calculate your projected monthly earnings based on bay capacity and average daily charging hours.</p>
+            <p class="calc-desc">Estimate your projected monthly earnings based on bay capacity and daily charging hours.</p>
 
             <div class="slider-group">
               <div class="slider-header">
                 <span>Number of Bays</span>
                 <span class="slider-value-display" id="val-bays">2 Bays</span>
               </div>
-              <input type="range" min="1" max="10" value="2" class="calc-slider" id="slider-bays" oninput="updateHostEarnings()">
+              <input type="range" min="1" max="10" value="2" class="calc-slider" id="slider-bays" aria-label="Number of Bays" oninput="updateHostEarnings()">
             </div>
 
             <div class="slider-group">
@@ -1490,39 +1607,39 @@
                 <span>Average Daily Occupied Hours</span>
                 <span class="slider-value-display" id="val-hours">6 Hours/day</span>
               </div>
-              <input type="range" min="2" max="16" value="6" class="calc-slider" id="slider-hours" oninput="updateHostEarnings()">
+              <input type="range" min="2" max="16" value="6" class="calc-slider" id="slider-hours" aria-label="Average Daily Occupied Hours" oninput="updateHostEarnings()">
             </div>
 
             <div class="slider-group">
               <div class="slider-header">
                 <span>Rate per Hour (&#8377;)</span>
-                <span class="slider-value-display" id="val-rate">&#8377;60 / hr</span>
+                <span class="slider-value-display" id="val-rate">&#8377;30 / hr</span>
               </div>
-              <input type="range" min="30" max="250" step="10" value="60" class="calc-slider" id="slider-rate" oninput="updateHostEarnings()">
+              <input type="range" min="15" max="200" step="5" value="30" class="calc-slider" id="slider-rate" aria-label="Rate per Hour" oninput="updateHostEarnings()">
             </div>
 
             <div class="earnings-display-box">
-              <div class="earnings-number" id="est-monthly">&#8377;19,440</div>
+              <div class="earnings-number" id="est-monthly">&#8377;9,720</div>
               <div class="earnings-subtitle">Estimated Net Monthly Payout (after 10% platform fee)</div>
             </div>
 
             <div class="host-toggle-row">
-              <span>Simulate Station Status:</span>
-              <button class="chip-btn" id="station-toggle-btn" onclick="toggleSimStation(this)" style="padding: 4px 10px; font-size: 0.75rem;">Status: Online</button>
+              <span>Preview Station Status Toggle:</span>
+              <button type="button" class="chip-btn" id="station-toggle-btn" onclick="toggleSimStation(this)" style="padding: 4px 10px; font-size: 0.75rem;">Status: Online</button>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- BARRIER SIMULATOR & SECURITY PROOF -->
+      <!-- BARRIER SIMULATOR & FAQ -->
       <section class="simulator-section" id="simulator" aria-labelledby="sim-heading">
         <div class="container">
           <div class="section-header" style="text-align: center; justify-content: center; margin-bottom: var(--space-8);">
             <div class="section-title-wrap" style="text-align: center;">
-              <span class="section-tag">// Developer Sandbox & Barrier Control</span>
+              <span class="section-tag">// Live FastAPI Barrier Simulator</span>
               <h2 class="section-heading" id="sim-heading">Simulate automated barrier check-in.</h2>
               <p style="color: var(--color-text-secondary); margin-top: 8px;">
-                Experience the zero-contact software check-in cycle. Enter a voucher ID or click Auto-fill to test gate actuation.
+                Reserve any bay above (or click Auto-fill to load an active booking ID) and trigger the live <code>POST /api/simulator/check-in</code> API.
               </p>
             </div>
           </div>
@@ -1530,27 +1647,27 @@
           <div class="simulator-card">
             <div class="sim-panel-left">
               <h3>FastAPI Simulator Client</h3>
-              <p>Simulates the exact <code>POST /api/simulator/check-in</code> call used by onsite RFID barriers and camera scanners.</p>
+              <p>Calls <code>POST /api/simulator/check-in</code> &amp; <code>POST /api/simulator/reset</code> directly against SQLite.</p>
 
               <div class="sim-input-box">
-                <input type="text" id="sim-voucher-id" class="sim-input" placeholder="e.g. VOUCH-MY-7890">
-                <button class="chip-btn" onclick="autoFillVoucher()">Auto-fill</button>
+                <input type="text" id="sim-voucher-id" class="sim-input" placeholder="Enter booking ID (e.g. bk_...)" aria-label="Booking ID">
+                <button type="button" class="chip-btn" onclick="autoFillVoucher()">Auto-fill</button>
               </div>
 
-              <div style="display: flex; gap: 8px;">
-                <button class="btn-sim-action" onclick="triggerSimCheckIn()">Actuate Gate (Check In)</button>
-                <button class="chip-btn" onclick="resetSimBarrier()">Reset Barrier</button>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button type="button" class="btn-sim-action" id="btn-sim-checkin" onclick="triggerSimCheckIn()">Actuate Gate (Check In)</button>
+                <button type="button" class="chip-btn" id="btn-sim-reset" onclick="resetSimBarrier()">Reset Barrier</button>
               </div>
 
-              <div id="sim-log" style="font-family: var(--font-mono); font-size: 0.75rem; color: #94a3b8; margin-top: 14px; background: rgba(0,0,0,0.5); padding: 8px 12px; border-radius: var(--radius-sm);">
-                Status: Ready. Awaiting check-in command.
+              <div id="sim-log" role="status" style="font-family: var(--font-mono); font-size: 0.76rem; color: #94a3b8; margin-top: 14px; background: rgba(0,0,0,0.5); padding: 10px 12px; border-radius: var(--radius-sm); line-height: 1.5;">
+                Status: Ready. Book a bay or click Auto-fill to load a confirmed booking.
               </div>
             </div>
 
             <div class="sim-sensor-viz">
               <div class="barrier-arm" id="barrier-arm"></div>
               <div class="barrier-status-text" id="barrier-status">ARM LOWERED &bull; ACCESS LOCKED</div>
-              <span style="font-size: 0.7rem; color: var(--color-text-muted); margin-top: 8px;">Telemetry: IR Sensor 12.2958 N, 76.6394 E</span>
+              <span style="font-size: 0.72rem; color: var(--color-text-muted); margin-top: 8px;">Software Simulation &bull; Mysuru Demo Grid (12.2958 N, 76.6394 E)</span>
             </div>
           </div>
 
@@ -1559,49 +1676,49 @@
             <h3 style="font-size: 1.6rem; font-weight: 700; margin-bottom: var(--space-8); text-align: center;">Frequently Asked Questions</h3>
 
             <div class="faq-item">
-              <button class="faq-trigger" onclick="toggleFaq(this)">
+              <button type="button" class="faq-trigger" aria-expanded="false" onclick="toggleFaq(this)">
                 <span>How does SpotShare guarantee that a spot is not double-booked?</span>
                 <span class="faq-icon-arrow">&#9662;</span>
               </button>
               <div class="faq-content">
                 <div class="faq-content-inner">
-                  SpotShare uses atomic <code>BEGIN IMMEDIATE</code> SQLite database transactions. Booking intervals are evaluated strictly as half-open sets <code>[start_time, end_time)</code>. If multiple drivers attempt booking the same bay for overlapping times, the second request is immediately rejected with a <code>409 conflict</code> error.
+                  SpotShare uses atomic <code>BEGIN IMMEDIATE</code> SQLite database transactions. Booking intervals are evaluated strictly as half-open sets <code>[start_time, end_time)</code>. If multiple drivers attempt booking the same bay for overlapping times beyond capacity, conflicting requests are rejected with a <code>409</code> conflict error.
                 </div>
               </div>
             </div>
 
             <div class="faq-item">
-              <button class="faq-trigger" onclick="toggleFaq(this)">
-                <span>What happens if I arrive earlier or stay longer than my reserved slot?</span>
+              <button type="button" class="faq-trigger" aria-expanded="false" onclick="toggleFaq(this)">
+                <span>What happens if I arrive earlier or need to cancel my reservation?</span>
                 <span class="faq-icon-arrow">&#9662;</span>
               </button>
               <div class="faq-content">
                 <div class="faq-content-inner">
-                  Our barrier check-in allows an early grace period of 15 minutes before your slot begins. If you need to extend your charging or parking duration, you can seamlessly extend the reservation from the My Bookings portal provided the subsequent time window is unoccupied.
+                  Barrier check-in opens 15 minutes before your booked <code>start_time</code>. Confirmed bookings can also be cancelled anytime from My Bookings in the main app, immediately freeing the bay for other drivers.
                 </div>
               </div>
             </div>
 
             <div class="faq-item">
-              <button class="faq-trigger" onclick="toggleFaq(this)">
+              <button type="button" class="faq-trigger" aria-expanded="false" onclick="toggleFaq(this)">
                 <span>Can private homeowners list an EV charger on SpotShare?</span>
                 <span class="faq-icon-arrow">&#9662;</span>
               </button>
               <div class="faq-content">
                 <div class="faq-content-inner">
-                  Yes! Private hosts with residential 7.4kW, 11kW, or 22kW wallboxes can publish their charger bays. You can set customized availability hours, define vehicle restrictions, and temporarily toggle station status to "Closed" whenever you are out of town.
+                  Yes! Open the Host Hub portal to publish residential or commercial chargers with GPS auto-detection, hourly pricing, charger kW rating, supported vehicle types, and Turn Off / Close status controls whenever you are away.
                 </div>
               </div>
             </div>
 
             <div class="faq-item">
-              <button class="faq-trigger" onclick="toggleFaq(this)">
-                <span>How does password recovery work without insecure plain-text emails?</span>
+              <button type="button" class="faq-trigger" aria-expanded="false" onclick="toggleFaq(this)">
+                <span>How does password recovery keep user accounts secure?</span>
                 <span class="faq-icon-arrow">&#9662;</span>
               </button>
               <div class="faq-content">
                 <div class="faq-content-inner">
-                  SpotShare implements high-security TLS/SSL Gmail SMTP delivery with salted SHA-256 OTP hashes stored in SQLite. Verification codes expire in 10 minutes, can only be used once, and lock automatically after 5 incorrect attempts.
+                  SpotShare sends 6-digit verification codes via TLS/SSL Gmail SMTP and stores salted SHA-256 OTP hashes in SQLite. Codes expire after 10 minutes, are single-use, and lock automatically after 5 failed attempts.
                 </div>
               </div>
             </div>
@@ -1612,22 +1729,22 @@
       <!-- FINAL CTA -->
       <section class="final-cta-section container" aria-label="Call to action">
         <div class="final-cta-box">
-          <span class="section-tag" style="color: #ffffff;">// Start In Seconds</span>
+          <span class="section-tag" style="color: #ffffff;">// Full Platform Portals</span>
           <h2 class="hero-heading" style="font-size: clamp(2rem, 4.5vw, 3.5rem); margin-bottom: 16px;">
-            Reserve your bay or start earning today.
+            Reserve your bay or manage your chargers now.
           </h2>
           <p style="color: #cbd5e1; max-width: 620px; margin: 0 auto; font-size: 1.05rem;">
-            Join over 1,200 EV commuters and commercial hosts across Mysuru. Zero subscriptions, zero surge pricing, pure convenience.
+            Switch seamlessly between the interactive Driver Marketplace (with Leaflet map &amp; booking history) and the dedicated Host Hub.
           </p>
 
           <div class="cta-actions-group">
-            <button class="btn-cta-primary" onclick="scrollToNetwork()">
-              <span>Book a Nearby Spot</span>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </button>
-            <button class="btn-cta-secondary" onclick="openHostModal()">
-              <span>List Your Charger</span>
-            </button>
+            <a href="/" class="btn-cta-primary" data-portal-path="/">
+              <span>Open Customer Marketplace</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
+            <a href="/host.html" class="btn-cta-secondary" data-portal-path="/host.html">
+              <span>Open Host Hub</span>
+            </a>
           </div>
         </div>
       </section>
@@ -1645,253 +1762,579 @@
               <span>SpotShare</span>
             </div>
             <p style="font-size: 0.85rem; line-height: 1.6; max-width: 320px;">
-              Hyperlocal parking & high-speed EV charging marketplace. Built with FastAPI, SQLite, and responsive shader ergonomics.
+              Hyperlocal parking &amp; EV charging marketplace powered by React 18, Vite, FastAPI, SQLite, and WebGL dithered shaders.
             </p>
           </div>
 
           <div class="footer-col">
-            <h4>Driver Network</h4>
+            <h4>Portals</h4>
             <ul class="footer-links">
-              <li><a href="#network">Palace Area Bays</a></li>
-              <li><a href="#network">Gokulam EV Fast Hubs</a></li>
-              <li><a href="#network">Devaraja Market Lots</a></li>
-              <li><a href="#network">Vijay Nagar Private Bays</a></li>
+              <li><a href="/" data-portal-path="/">Customer Marketplace</a></li>
+              <li><a href="/host.html" data-portal-path="/host.html">Host Hub Dashboard</a></li>
+              <li><a href="#network">Live Station Explorer</a></li>
+              <li><a href="#simulator">Barrier Simulator</a></li>
             </ul>
           </div>
 
           <div class="footer-col">
-            <h4>Hosts & Partners</h4>
+            <h4>Hosts &amp; API</h4>
             <ul class="footer-links">
-              <li><a href="#host-hub">Host Hub Dashboard</a></li>
               <li><a href="#host-hub">Revenue Estimator</a></li>
-              <li><a href="#simulator">Simulator API</a></li>
-              <li><a href="#faq">Hardware Partnerships</a></li>
+              <li><a href="http://localhost:8000/docs" target="_blank" rel="noopener noreferrer" id="docs-link">FastAPI Swagger Docs</a></li>
+              <li><a href="#faq">FAQ &amp; Booking Rules</a></li>
             </ul>
           </div>
 
           <div class="footer-col">
-            <h4>System & Trust</h4>
+            <h4>System Status</h4>
             <ul class="footer-links">
-              <li><a href="#">Privacy Policy</a></li>
-              <li><a href="#">Terms of Service</a></li>
-              <li><a href="#">Security Protocol</a></li>
-              <li><span style="color: var(--color-emerald-glow);">&#x25CF; Backend :8000 Healthy</span></li>
+              <li><span>Timezone: Asia/Kolkata (IST)</span></li>
+              <li><span>Demo Grid: 12.2958 N, 76.6394 E</span></li>
+              <li><span id="backend-status-indicator" style="color: #fbbf24;">&#x25CF; Checking Backend :8000...</span></li>
             </ul>
           </div>
         </div>
 
         <div class="footer-bottom">
-          <span>&copy; 2026 SpotShare Network Inc. All rights reserved. Mysuru, Karnataka.</span>
-          <span>Designed with WebGL Dithered Shaders &bull; Accessible &bull; 60 FPS</span>
+          <span>&copy; 2026 SpotShare Network. Mysuru, Karnataka.</span>
+          <span>WebGL Dithered Shaders &bull; Live FastAPI + SQLite Integration</span>
         </div>
       </div>
     </footer>
   </div>
 
   <!-- ═══════════════════════════════════════════════════════════════════════
-       12. INTERACTIVE BOOKING MODAL
+       12. LIVE BOOKING MODAL (Wired to POST /api/bookings)
        ═══════════════════════════════════════════════════════════════════════ -->
   <div class="modal-backdrop" id="booking-modal" role="dialog" aria-modal="true" aria-labelledby="modal-spot-name">
     <div class="modal-dialog">
-      <button class="modal-close-btn" onclick="closeBookingModal()" aria-label="Close modal">&times;</button>
+      <button type="button" class="modal-close-btn" onclick="closeBookingModal()" aria-label="Close modal">&times;</button>
       <span class="section-tag" style="color: var(--color-emerald-glow);">// Instant Reservation</span>
-      <h3 id="modal-spot-name" style="color: #ffffff; font-size: 1.35rem; margin-top: 4px;">Mysuru Palace EV Fast Hub</h3>
-      <p id="modal-spot-address" style="color: var(--color-text-secondary); font-size: 0.85rem; margin-bottom: 18px;">Near South Gate, Agrahara</p>
+      <h3 id="modal-spot-name" style="color: #ffffff; font-size: 1.35rem; margin-top: 4px;">Station Name</h3>
+      <p id="modal-spot-address" style="color: var(--color-text-secondary); font-size: 0.85rem; margin-bottom: 16px;">Address</p>
 
-      <div style="background: rgba(0,0,0,0.5); padding: 14px; border-radius: var(--radius-md); margin-bottom: 18px;">
+      <div style="background: rgba(0,0,0,0.45); padding: 14px; border-radius: var(--radius-md); margin-bottom: 16px;">
         <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 6px;">
           <span style="color: var(--color-text-muted);">Hourly Rate:</span>
-          <strong id="modal-rate-display" style="color: #ffffff;">&#8377;60 / hr</strong>
+          <strong id="modal-rate-display" style="color: #ffffff;">&#8377;30 / hr</strong>
         </div>
         <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 6px;">
-          <span style="color: var(--color-text-muted);">Vehicle Allowed:</span>
-          <span style="color: #ffffff;">Car, EV, Van</span>
+          <span style="color: var(--color-text-muted);">Open Bays:</span>
+          <span id="modal-spaces-display" style="color: #34d399;">--</span>
         </div>
         <div style="display: flex; justify-content: space-between; font-size: 0.85rem;">
-          <span style="color: var(--color-text-muted);">Connector:</span>
-          <span style="color: var(--color-cyan-beam);" id="modal-connector-display">CCS2 60kW DC</span>
+          <span style="color: var(--color-text-muted);">Specs:</span>
+          <span style="color: var(--color-cyan-beam);" id="modal-connector-display">--</span>
         </div>
       </div>
 
-      <div style="margin-bottom: 16px;">
-        <label class="filter-label" for="booking-hours">Select Booking Duration</label>
-        <select id="booking-hours" class="filter-field" style="background: #111a2e; padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--color-border-subtle);" onchange="recalcModalTotal()">
-          <option value="1">1 Hour</option>
-          <option value="2" selected>2 Hours</option>
-          <option value="3">3 Hours</option>
-          <option value="5">5 Hours</option>
-        </select>
-      </div>
-
-      <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--color-border-subtle); padding-top: 16px; margin-top: 8px;">
-        <div>
-          <span style="font-size: 0.75rem; color: var(--color-text-muted);">Total Estimated Cost</span>
-          <div id="modal-total-price" style="font-family: var(--font-mono); font-size: 1.5rem; font-weight: 800; color: #ffffff;">&#8377;120</div>
+      <form id="modal-booking-form" onsubmit="submitRealBooking(event)">
+        <div class="modal-form-grid">
+          <div>
+            <label class="filter-label" for="booking-customer-name">Driver Name</label>
+            <input type="text" id="booking-customer-name" class="modal-input" value="Showcase Driver" required maxlength="80">
+          </div>
+          <div>
+            <label class="filter-label" for="booking-customer-email">Email (Optional Receipt)</label>
+            <input type="email" id="booking-customer-email" class="modal-input" placeholder="driver@example.com" maxlength="120">
+          </div>
         </div>
 
-        <button class="btn-hero-search" style="min-height: 42px;" onclick="confirmDemoBooking()">
-          <span>Confirm &amp; Voucher</span>
-        </button>
-      </div>
+        <div class="modal-form-grid">
+          <div>
+            <label class="filter-label" for="booking-vehicle">Vehicle Type</label>
+            <select id="booking-vehicle" class="modal-input"></select>
+          </div>
+          <div>
+            <label class="filter-label" for="booking-hours">Duration</label>
+            <select id="booking-hours" class="modal-input" onchange="recalcModalTotal()">
+              <option value="1">1 Hour</option>
+              <option value="2" selected>2 Hours</option>
+              <option value="3">3 Hours</option>
+              <option value="5">5 Hours</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="modal-feedback" class="modal-feedback" style="display: none;"></div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--color-border-subtle); padding-top: 16px; margin-top: 12px; gap: 12px; flex-wrap: wrap;">
+          <div>
+            <span style="font-size: 0.75rem; color: var(--color-text-muted);">Total Estimated Cost</span>
+            <div id="modal-total-price" style="font-family: var(--font-mono); font-size: 1.5rem; font-weight: 800; color: #ffffff;">&#8377;60</div>
+          </div>
+
+          <button type="submit" class="btn-hero-search" id="btn-confirm-booking" style="min-height: 42px;">
+            <span>Confirm Reservation</span>
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 
   <!-- ═══════════════════════════════════════════════════════════════════════
-       13. SCRIPT: WEBGL SHADER ENGINE & INTERACTION LOGIC
+       13. SCRIPT: LIVE FASTAPI INTEGRATION + WEBGL SHADERS
        ═══════════════════════════════════════════════════════════════════════ -->
   <script>
     /* -----------------------------------------------------------------------
-       A. Real-time Station Seed Data
+       A. Configuration & Portal Path Helpers
        ----------------------------------------------------------------------- */
-    const STATIONS = [
+    const API_BASE = (window.location.protocol === 'file:'
+      ? 'http://localhost:8000'
+      : `http://${window.location.hostname || 'localhost'}:8000`).replace(/\/+$/, '');
+
+    function getPortalUrl(targetPath) {
+      if (window.location.protocol === 'file:') {
+        const clean = targetPath.replace(/^\/+/, '');
+        return clean ? `http://localhost:5173/${clean}` : 'http://localhost:5173/';
+      }
+      return targetPath;
+    }
+
+    function applyPortalLinks() {
+      document.querySelectorAll('[data-portal-path]').forEach((el) => {
+        el.setAttribute('href', getPortalUrl(el.getAttribute('data-portal-path')));
+      });
+      const docsLink = document.getElementById('docs-link');
+      if (docsLink) docsLink.href = `${API_BASE}/docs`;
+    }
+
+    /* Fallback spots matching SpotShare Mysuru demo data when backend is offline */
+    const FALLBACK_STATIONS = [
       {
         id: 'spot201',
-        name: 'Mysuru Palace Fast EV Charging Bay',
-        address: 'Near South Gate, Agrahara, Mysuru',
-        rate: 60,
-        type: 'fast-ev',
-        charger: 'CCS2 60kW DC',
-        spaces: 4,
-        img: 'https://images.unsplash.com/photo-1593941707882-a5bba14938c7?auto=format&fit=crop&w=700&q=80',
-        distance: '0.6 km',
-        host: 'Commercial Host'
+        name: 'Mysuru Palace Fast EV Hub',
+        address: 'Sayyaji Rao Rd, Near South Gate, Mysuru',
+        latitude: 12.3052,
+        longitude: 76.6552,
+        price_per_hour: 32,
+        vehicle_types: ['car', 'van'],
+        ev_charging: true,
+        charger_power_kw: 50,
+        capacity: 4,
+        available_spaces: 4,
+        status: 'available',
+        is_active: true,
+        amenities: ['DC 50 kW', 'CCS2', 'Public Station'],
+        owner_name: 'Demo Host'
       },
       {
         id: 'spot101',
-        name: 'Devaraja Market Underground Bay',
+        name: 'Devaraja Market Multi-Level Parking',
         address: 'Sayyaji Rao Rd, Shivarampet, Mysuru',
-        rate: 35,
-        type: 'parking',
-        charger: 'Standard Covered Bay',
-        spaces: 12,
-        img: 'https://images.unsplash.com/photo-1506521781263-d8422e82f27a?auto=format&fit=crop&w=700&q=80',
-        distance: '1.2 km',
-        host: 'Public Lot'
+        latitude: 12.3118,
+        longitude: 76.6524,
+        price_per_hour: 20,
+        vehicle_types: ['car', 'bike', 'van'],
+        ev_charging: false,
+        charger_power_kw: null,
+        capacity: 12,
+        available_spaces: 10,
+        status: 'available',
+        is_active: true,
+        amenities: ['Covered', 'CCTV', 'Security 24/7'],
+        owner_name: 'Demo Host'
       },
       {
         id: 'spot203',
-        name: 'Gokulam Tech Park EV Ultra Hub',
+        name: 'Gokulam Tech Corridor EV Hub',
         address: '3rd Stage, Gokulam, Mysuru',
-        rate: 80,
-        type: 'fast-ev',
-        charger: 'Dual CCS2 120kW DC',
-        spaces: 6,
-        img: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=700&q=80',
-        distance: '2.8 km',
-        host: 'Commercial Host'
+        latitude: 12.3274,
+        longitude: 76.6258,
+        price_per_hour: 30,
+        vehicle_types: ['car', 'van'],
+        ev_charging: true,
+        charger_power_kw: 50,
+        capacity: 6,
+        available_spaces: 5,
+        status: 'available',
+        is_active: true,
+        amenities: ['DC 50 kW', 'CCS2', 'Cafe'],
+        owner_name: 'Demo Host'
       },
       {
         id: 'spot206',
-        name: 'Saraswathipuram Private Host Bay',
+        name: 'Saraswathipuram Private Wallbox',
         address: '8th Main, Saraswathipuram, Mysuru',
-        rate: 45,
-        type: 'private',
-        charger: 'Type 2 22kW AC Wallbox',
-        spaces: 1,
-        img: 'https://images.unsplash.com/photo-1558441719-8b489c63f7ce?auto=format&fit=crop&w=700&q=80',
-        distance: '1.9 km',
-        host: 'Private Resident'
+        latitude: 12.2994,
+        longitude: 76.6331,
+        price_per_hour: 22,
+        vehicle_types: ['car', 'bike'],
+        ev_charging: true,
+        charger_power_kw: 11,
+        capacity: 1,
+        available_spaces: 1,
+        status: 'available',
+        is_active: true,
+        amenities: ['Type 2', 'Private Owner'],
+        owner_name: 'Ananya Host'
       },
       {
         id: 'spot104',
-        name: 'Chamundi Hill Foothills Commuter Lot',
+        name: 'Chamundi Foothills Commuter Lot',
         address: 'Tavarekatte Entry, Mysuru',
-        rate: 30,
-        type: 'parking',
-        charger: '2-Wheeler & SUV Bays',
-        spaces: 24,
-        img: 'https://images.unsplash.com/photo-1470224114660-3f6686c562eb?auto=format&fit=crop&w=700&q=80',
-        distance: '4.1 km',
-        host: 'Municipal'
+        latitude: 12.2812,
+        longitude: 76.6685,
+        price_per_hour: 15,
+        vehicle_types: ['car', 'bike', 'van'],
+        ev_charging: false,
+        charger_power_kw: null,
+        capacity: 20,
+        available_spaces: 18,
+        status: 'available',
+        is_active: true,
+        amenities: ['24/7 Access', 'Lighting'],
+        owner_name: 'Demo Host'
       },
       {
         id: 'spot208',
         name: 'Vijayanagar Solar EV Canopy',
-        address: 'Outer Ring Rd, Vijayanagar 4th Stage',
-        rate: 55,
-        type: 'type2',
-        charger: 'Type 2 AC 11kW Solar',
-        spaces: 3,
-        img: 'https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=700&q=80',
-        distance: '3.4 km',
-        host: 'Commercial Host'
+        address: 'Outer Ring Rd, Vijayanagar, Mysuru',
+        latitude: 12.3315,
+        longitude: 76.6095,
+        price_per_hour: 26,
+        vehicle_types: ['car', 'bike'],
+        ev_charging: true,
+        charger_power_kw: 22,
+        capacity: 3,
+        available_spaces: 3,
+        status: 'available',
+        is_active: true,
+        amenities: ['Type 2', 'Solar Canopy'],
+        owner_name: 'Demo Host'
       }
     ];
 
-    let currentSelectedSpot = STATIONS[0];
+    let liveSpots = [...FALLBACK_STATIONS];
+    let backendOnline = false;
+    let currentStationFilter = 'all';
+    let currentSelectedSpot = liveSpots[0];
+    let lastCreatedBookingId = '';
+    let userLocation = { latitude: 12.2958, longitude: 76.6394 };
 
-    function renderStations(filter = 'all') {
-      const container = document.getElementById('stations-container');
-      if (!container) return;
-
-      const filtered = STATIONS.filter(item => {
-        if (filter === 'all') return true;
-        if (filter === 'fast-ev') return item.type === 'fast-ev';
-        if (filter === 'type2') return item.type === 'type2' || item.type === 'fast-ev';
-        if (filter === 'private') return item.type === 'private';
-        return true;
-      });
-
-      container.innerHTML = filtered.map(spot => `
-        <article class="spot-card">
-          <div class="spot-card-media">
-            <img src="${spot.img}" alt="${spot.name}" loading="lazy">
-            <div class="spot-badge-overlay">
-              <span class="badge-status ${spot.type === 'fast-ev' ? 'ev-fast' : 'available'}">
-                ${spot.type === 'fast-ev' ? '⚡ FAST CHARGE' : '● AVAILABLE'}
-              </span>
-              <span class="badge-status" style="background: rgba(0,0,0,0.7); color: #fff;">${spot.distance}</span>
-            </div>
-          </div>
-          <div class="spot-card-body">
-            <h3 class="spot-card-title">${spot.name}</h3>
-            <div class="spot-card-address">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-              <span>${spot.address}</span>
-            </div>
-
-            <div class="spot-specs-row">
-              <div class="spec-item">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18"/></svg>
-                <span>${spot.spaces} bays free</span>
-              </div>
-              <div class="spec-item">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                <span>${spot.charger}</span>
-              </div>
-            </div>
-
-            <div class="spot-card-footer">
-              <div class="spot-price-tag">
-                <span class="spot-price-val">&#8377;${spot.rate}<span style="font-size: 0.75rem; font-weight: 500; color: var(--color-text-muted);">/hr</span></span>
-                <span class="spot-price-sub">${spot.host}</span>
-              </div>
-              <button class="btn-book-spot" onclick="openBookingModal('${spot.id}')">
-                Reserve Bay
-              </button>
-            </div>
-          </div>
-        </article>
-      `).join('');
+    function haversineKm(lat1, lon1, lat2, lon2) {
+      const toRad = (deg) => (deg * Math.PI) / 180;
+      const R = 6371.0088;
+      const dLat = toRad(lat2 - lat1);
+      const dLon = toRad(lon2 - lon1);
+      const a =
+        Math.sin(dLat / 2) ** 2 +
+        Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+      return 2 * R * Math.asin(Math.sqrt(a));
     }
 
-    function filterStations(type, btn) {
-      document.querySelectorAll('.filter-chips .chip-btn').forEach(b => b.classList.remove('active'));
-      if (btn) btn.classList.add('active');
-      renderStations(type);
+    function getSpotImageUrl(spot) {
+      if (spot.image_url) return spot.image_url;
+      const prefix =
+        window.location.protocol === 'file:' && !window.location.pathname.includes('/frontend/')
+          ? 'frontend/public/images/spots/'
+          : '/images/spots/';
+      return `${prefix}${spot.id}.jpg`;
+    }
+
+    function getFallbackCdnImage(spot) {
+      return spot.ev_charging
+        ? 'https://images.unsplash.com/photo-1593941707882-a5bba14938c7?auto=format&fit=crop&w=700&q=80'
+        : 'https://images.unsplash.com/photo-1506521781263-d8422e82f27a?auto=format&fit=crop&w=700&q=80';
+    }
+
+    function isPrivateSpot(spot) {
+      const owner = String(spot.owner_name || '').trim().toLowerCase();
+      if (owner && owner !== 'demo host') return true;
+      const am = (spot.amenities || []).map((a) => String(a).toLowerCase());
+      return am.some((a) => a.includes('private') || a.includes('home'));
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    async function apiFetch(path, options = {}) {
+      const res = await fetch(`${API_BASE}${path}`, {
+        headers: options.body ? { 'Content-Type': 'application/json' } : undefined,
+        ...options,
+        body: options.body ? JSON.stringify(options.body) : undefined,
+      });
+      let data = null;
+      try {
+        data = await res.json();
+      } catch {
+        data = null;
+      }
+      if (!res.ok) {
+        const msg = (data && typeof data.detail === 'string') ? data.detail : `Request failed (${res.status})`;
+        const err = new Error(msg);
+        err.status = res.status;
+        err.data = data;
+        throw err;
+      }
+      return data;
     }
 
     /* -----------------------------------------------------------------------
-       B. Interactive Booking Modal Logic
+       B. Hydrate Live Backend Data (/api/health, /api/spots, /api/insights)
+       ----------------------------------------------------------------------- */
+    async function loadLiveSpotShareData() {
+      const badge = document.getElementById('live-hub-badge');
+      const badgeText = document.getElementById('live-hub-text');
+      const footerStatus = document.getElementById('backend-status-indicator');
+      const eyebrow = document.getElementById('hero-eyebrow-text');
+
+      try {
+        const [health, spotsData, insights] = await Promise.all([
+          apiFetch('/api/health'),
+          apiFetch('/api/spots'),
+          apiFetch('/api/insights').catch(() => null),
+        ]);
+
+        backendOnline = health && health.status === 'ok';
+        if (Array.isArray(spotsData) && spotsData.length > 0) {
+          liveSpots = spotsData;
+        }
+
+        const openSpots = liveSpots.filter((s) => s.is_active !== false && s.status !== 'closed');
+
+        if (badge && badgeText) {
+          badge.classList.remove('offline');
+          badgeText.innerText = `${openSpots.length} Live Hubs`;
+        }
+        if (footerStatus) {
+          footerStatus.style.color = 'var(--color-emerald-glow)';
+          footerStatus.innerHTML = '&#x25CF; Backend :8000 Connected (SQLite Live)';
+        }
+        if (eyebrow) {
+          eyebrow.innerHTML = `Mysuru Hyperlocal Grid &bull; ${liveSpots.length} Live Stations Connected`;
+        }
+
+        updateTelemetryStrip(insights);
+      } catch {
+        backendOnline = false;
+        liveSpots = [...FALLBACK_STATIONS];
+        if (badge && badgeText) {
+          badge.classList.add('offline');
+          badgeText.innerText = 'Offline Preview';
+        }
+        if (footerStatus) {
+          footerStatus.style.color = '#fbbf24';
+          footerStatus.innerHTML = '&#x25CF; Backend Offline — Showing Preview Data';
+        }
+        if (eyebrow) {
+          eyebrow.innerHTML = 'Mysuru Hyperlocal Grid &bull; Offline Preview Mode (Start backend :8000 for live DB)';
+        }
+        updateTelemetryStrip(null);
+      }
+
+      renderStations(currentStationFilter);
+    }
+
+    function updateTelemetryStrip(insights) {
+      const baysEl = document.getElementById('tele-bays');
+      const evEl = document.getElementById('tele-ev-power');
+      const hubsEl = document.getElementById('tele-hubs');
+      const rateEl = document.getElementById('tele-rate');
+      const openSpots = liveSpots.filter((s) => s.is_active !== false && s.status !== 'closed');
+
+      if (insights && insights.summary) {
+        if (baysEl) baysEl.innerText = insights.summary.available_spaces;
+        if (hubsEl) hubsEl.innerText = insights.summary.active_spots ?? openSpots.length;
+        const totalKw = openSpots
+          .filter((s) => s.ev_charging && s.charger_power_kw)
+          .reduce((sum, s) => sum + Number(s.charger_power_kw || 0), 0);
+        if (evEl) evEl.innerText = totalKw > 0 ? `${Math.round(totalKw)} kW` : `${insights.ev?.charging_spaces_available ?? 0} Bays`;
+        const cheapest = insights.cheapest_available_spot?.price_per_hour;
+        if (rateEl) rateEl.innerHTML = cheapest != null ? `&#8377;${cheapest}/hr` : '&#8377;20/hr';
+      } else {
+        const freeSum = openSpots.reduce((acc, s) => acc + Number(s.available_spaces ?? s.capacity ?? 0), 0);
+        const totalKw = openSpots.reduce((acc, s) => acc + Number(s.charger_power_kw || 0), 0);
+        const prices = openSpots.map((s) => Number(s.price_per_hour)).filter((n) => Number.isFinite(n));
+        if (baysEl) baysEl.innerText = freeSum;
+        if (evEl) evEl.innerText = `${Math.round(totalKw)} kW`;
+        if (hubsEl) hubsEl.innerText = openSpots.length;
+        if (rateEl) rateEl.innerHTML = prices.length ? `&#8377;${Math.min(...prices)}/hr` : '&#8377;20/hr';
+      }
+    }
+
+    /* -----------------------------------------------------------------------
+       C. Render Live Station Cards
+       ----------------------------------------------------------------------- */
+    function renderStations(filter = currentStationFilter) {
+      const container = document.getElementById('stations-container');
+      if (!container) return;
+
+      const query = (document.getElementById('search-location')?.value || '').trim().toLowerCase();
+      const vehicle = document.getElementById('vehicle-select')?.value || 'all';
+
+      const enriched = liveSpots
+        .map((spot) => ({
+          ...spot,
+          _distanceKm:
+            typeof spot.distance_km === 'number'
+              ? spot.distance_km
+              : haversineKm(userLocation.latitude, userLocation.longitude, spot.latitude, spot.longitude),
+        }))
+        .sort((a, b) => a._distanceKm - b._distanceKm);
+
+      const filtered = enriched.filter((item) => {
+        if (query) {
+          const hay = `${item.name} ${item.address}`.toLowerCase();
+          if (!hay.includes(query)) return false;
+        }
+        if (vehicle !== 'all' && Array.isArray(item.vehicle_types) && !item.vehicle_types.includes(vehicle)) {
+          return false;
+        }
+        if (filter === 'parking') return !item.ev_charging;
+        if (filter === 'ev') return Boolean(item.ev_charging);
+        if (filter === 'fast-ev') return Boolean(item.ev_charging) && Number(item.charger_power_kw || 0) >= 20;
+        if (filter === 'private') return isPrivateSpot(item);
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="empty-stations-card">
+            <h3 style="color: #ffffff; margin-bottom: 8px;">No stations match your current filter</h3>
+            <p style="margin-bottom: 16px;">Try clearing the search query or switching back to All Stations.</p>
+            <button type="button" class="chip-btn active" onclick="resetStationFilters()">Reset Filters</button>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered
+        .slice(0, 9)
+        .map((spot) => {
+          const isClosed = spot.is_active === false || spot.status === 'closed';
+          const free = isClosed ? 0 : Math.max(0, Number(spot.available_spaces ?? 0));
+          const isFastEv = Boolean(spot.ev_charging) && Number(spot.charger_power_kw || 0) >= 20;
+          const badgeClass = isClosed ? 'closed' : isFastEv ? 'ev-fast' : 'available';
+          const badgeLabel = isClosed
+            ? '● CLOSED'
+            : spot.ev_charging
+              ? (isFastEv ? `⚡ ${spot.charger_power_kw} kW FAST` : `⚡ ${spot.charger_power_kw || 7.4} kW EV`)
+              : '● AVAILABLE';
+          const chargerLabel = spot.ev_charging
+            ? `${spot.charger_power_kw || 11} kW ${isFastEv ? 'CCS2 / Type 2' : 'Type 2 AC'}`
+            : (spot.vehicle_types || ['car', 'bike']).map((v) => v.toUpperCase()).join(' / ');
+          const imgUrl = getSpotImageUrl(spot);
+          const fallbackUrl = getFallbackCdnImage(spot);
+
+          return `
+            <article class="spot-card ${isClosed ? 'is-closed' : ''}">
+              <div class="spot-card-media">
+                <img src="${escapeHtml(imgUrl)}" alt="${escapeHtml(spot.name)}" loading="lazy" onerror="this.onerror=null;this.src='${fallbackUrl}';">
+                <div class="spot-badge-overlay">
+                  <span class="badge-status ${badgeClass}">${badgeLabel}</span>
+                  <span class="badge-status" style="background: rgba(0,0,0,0.75); color: #fff;">${spot._distanceKm.toFixed(1)} km</span>
+                </div>
+              </div>
+              <div class="spot-card-body">
+                <h3 class="spot-card-title">${escapeHtml(spot.name)}</h3>
+                <div class="spot-card-address">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  <span>${escapeHtml(spot.address)}</span>
+                </div>
+
+                <div class="spot-specs-row">
+                  <div class="spec-item">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18"/></svg>
+                    <span>${isClosed ? 'Host paused' : `${free} / ${spot.capacity || 1} bays free`}</span>
+                  </div>
+                  <div class="spec-item">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                    <span>${escapeHtml(chargerLabel)}</span>
+                  </div>
+                </div>
+
+                <div class="spot-card-footer">
+                  <div class="spot-price-tag">
+                    <span class="spot-price-val">&#8377;${spot.price_per_hour}<span style="font-size: 0.75rem; font-weight: 500; color: var(--color-text-muted);">/hr</span></span>
+                    <span class="spot-price-sub">${escapeHtml(spot.owner_name || 'Demo Host')}</span>
+                  </div>
+                  <button type="button" class="btn-book-spot" ${isClosed || free === 0 ? 'disabled' : ''} onclick="openBookingModal('${escapeHtml(spot.id)}')">
+                    ${isClosed ? 'Closed' : free === 0 ? 'Full' : 'Reserve Bay'}
+                  </button>
+                </div>
+              </div>
+            </article>
+          `;
+        })
+        .join('');
+    }
+
+    function filterStations(type, btn) {
+      currentStationFilter = type;
+      document.querySelectorAll('.filter-chips .chip-btn[data-filter]').forEach((b) => b.classList.remove('active'));
+      if (btn) {
+        btn.classList.add('active');
+      } else {
+        const match = document.querySelector(`.filter-chips .chip-btn[data-filter="${type}"]`);
+        if (match) match.classList.add('active');
+      }
+      renderStations(type);
+    }
+
+    function resetStationFilters() {
+      const q = document.getElementById('search-location');
+      const v = document.getElementById('vehicle-select');
+      if (q) q.value = '';
+      if (v) v.value = 'all';
+      filterStations('all');
+    }
+
+    function detectUserGps(btn) {
+      if (!navigator.geolocation) return;
+      btn.innerText = 'Locating...';
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          userLocation = { latitude: pos.coords.latitude, longitude: pos.coords.longitude };
+          btn.innerText = 'GPS Active';
+          btn.classList.add('active');
+          renderStations(currentStationFilter);
+        },
+        () => {
+          btn.innerText = 'Mysuru Default';
+        },
+        { timeout: 6000 }
+      );
+    }
+
+    /* -----------------------------------------------------------------------
+       D. Live Booking Modal (POST /api/bookings with graceful offline fallback)
        ----------------------------------------------------------------------- */
     function openBookingModal(spotId) {
-      const spot = STATIONS.find(s => s.id === spotId) || STATIONS[0];
+      const spot = liveSpots.find((s) => s.id === spotId) || liveSpots[0];
       currentSelectedSpot = spot;
 
       document.getElementById('modal-spot-name').innerText = spot.name;
       document.getElementById('modal-spot-address').innerText = spot.address;
-      document.getElementById('modal-rate-display').innerHTML = `&#8377;${spot.rate} / hr`;
-      document.getElementById('modal-connector-display').innerText = spot.charger;
+      document.getElementById('modal-rate-display').innerHTML = `&#8377;${spot.price_per_hour} / hr`;
+      document.getElementById('modal-spaces-display').innerText = `${spot.available_spaces ?? spot.capacity} of ${spot.capacity} free`;
+      document.getElementById('modal-connector-display').innerText = spot.ev_charging
+        ? `${spot.charger_power_kw || 11} kW EV (${Number(spot.charger_power_kw || 0) >= 20 ? 'CCS2 / Type 2' : 'Type 2'})`
+        : 'Standard Parking Bay';
+
+      const vehicleSelect = document.getElementById('booking-vehicle');
+      const allowed = Array.isArray(spot.vehicle_types) && spot.vehicle_types.length ? spot.vehicle_types : ['car'];
+      vehicleSelect.innerHTML = allowed
+        .map((v) => `<option value="${v}">${v.charAt(0).toUpperCase() + v.slice(1)}</option>`)
+        .join('');
+
+      const heroDuration = document.getElementById('duration-select')?.value;
+      if (heroDuration) {
+        document.getElementById('booking-hours').value = heroDuration;
+      }
+
+      const feedback = document.getElementById('modal-feedback');
+      feedback.style.display = 'none';
+      feedback.innerHTML = '';
+
+      const submitBtn = document.getElementById('btn-confirm-booking');
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '<span>Confirm Reservation</span>';
 
       recalcModalTotal();
       document.getElementById('booking-modal').classList.add('active');
@@ -1903,24 +2346,87 @@
 
     function recalcModalTotal() {
       const hours = parseInt(document.getElementById('booking-hours').value, 10) || 2;
-      const total = currentSelectedSpot.rate * hours;
-      document.getElementById('modal-total-price').innerHTML = `&#8377;${total}`;
+      const total = Number(currentSelectedSpot.price_per_hour || 0) * hours;
+      document.getElementById('modal-total-price').innerHTML = `&#8377;${total.toFixed(2).replace(/\.00$/, '')}`;
     }
 
-    function confirmDemoBooking() {
-      const code = 'VOUCH-MY-' + Math.floor(1000 + Math.random() * 9000);
-      alert(`Booking Confirmed!\n\nStation: ${currentSelectedSpot.name}\nVoucher ID: ${code}\nStatus: Confirmed & Spot Locked.\n\nYou can use this voucher code in the Simulator Barrier section below.`);
-      document.getElementById('sim-voucher-id').value = code;
+    async function submitRealBooking(e) {
+      e.preventDefault();
+      const feedback = document.getElementById('modal-feedback');
+      const submitBtn = document.getElementById('btn-confirm-booking');
+      const customerName = document.getElementById('booking-customer-name').value.trim() || 'Showcase Driver';
+      const customerEmail = document.getElementById('booking-customer-email').value.trim() || null;
+      const vehicleType = document.getElementById('booking-vehicle').value || 'car';
+      const hours = parseInt(document.getElementById('booking-hours').value, 10) || 2;
+
+      const startDt = new Date();
+      const endDt = new Date(startDt.getTime() + hours * 3600 * 1000);
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span>Reserving...</span>';
+      feedback.style.display = 'none';
+
+      try {
+        const created = await apiFetch('/api/bookings', {
+          method: 'POST',
+          body: {
+            spot_id: currentSelectedSpot.id,
+            customer_name: customerName,
+            customer_email: customerEmail,
+            start_time: startDt.toISOString(),
+            end_time: endDt.toISOString(),
+            vehicle_type: vehicleType,
+            requires_ev_charging: Boolean(currentSelectedSpot.ev_charging),
+          },
+        });
+
+        lastCreatedBookingId = created.id;
+        document.getElementById('sim-voucher-id').value = created.id;
+
+        feedback.className = 'modal-feedback success';
+        feedback.style.display = 'block';
+        feedback.innerHTML = `
+          <strong>Booking Confirmed in SQLite!</strong><br>
+          Voucher ID: <code>${escapeHtml(created.id)}</code> &bull; Total: <strong>&#8377;${created.total_price}</strong><br>
+          ${created.email_sent ? 'Email receipt sent via SMTP.<br>' : ''}
+          <div style="margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap;">
+            <button type="button" class="chip-btn active" onclick="jumpToSimulator()">Test in Barrier Simulator &rarr;</button>
+            <a href="${escapeHtml(getPortalUrl('/bookings'))}" class="chip-btn" style="text-decoration: none;">View in App &rarr;</a>
+          </div>
+        `;
+
+        await loadLiveSpotShareData();
+      } catch (err) {
+        if (!backendOnline || err.message.includes('Failed to fetch')) {
+          const demoCode = 'DEMO-' + Math.floor(1000 + Math.random() * 9000);
+          document.getElementById('sim-voucher-id').value = demoCode;
+          feedback.className = 'modal-feedback success';
+          feedback.style.display = 'block';
+          feedback.innerHTML = `
+            <strong>Offline Preview Voucher: <code>${demoCode}</code></strong><br>
+            FastAPI backend (:8000) is not running right now, so this preview reservation was not saved to SQLite.
+            <div style="margin-top: 10px;">
+              <button type="button" class="chip-btn active" onclick="jumpToSimulator()">Try Barrier Simulator &rarr;</button>
+            </div>
+          `;
+        } else {
+          feedback.className = 'modal-feedback error';
+          feedback.style.display = 'block';
+          feedback.innerText = `Booking could not be completed: ${err.message}`;
+        }
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<span>Confirm Reservation</span>';
+      }
+    }
+
+    function jumpToSimulator() {
       closeBookingModal();
       document.getElementById('simulator').scrollIntoView({ behavior: 'smooth' });
     }
 
-    function openHostModal() {
-      alert("Host Registration:\n\nIn SpotShare, new hosts can publish their station with GPS coordinates, hourly rate, power output (kW), and amenities.\n\nVisit host.html in this project to access the full Host Hub portal!");
-    }
-
     /* -----------------------------------------------------------------------
-       C. Host Calculator Logic
+       E. Host Calculator Logic
        ----------------------------------------------------------------------- */
     function updateHostEarnings() {
       const bays = parseInt(document.getElementById('slider-bays').value, 10);
@@ -1931,7 +2437,6 @@
       document.getElementById('val-hours').innerText = `${hours} Hours/day`;
       document.getElementById('val-rate').innerHTML = `&#8377;${rate} / hr`;
 
-      // 30 days, 10% platform fee
       const gross = bays * hours * rate * 30;
       const net = Math.round(gross * 0.9);
       document.getElementById('est-monthly').innerHTML = `&#8377;${net.toLocaleString('en-IN')}`;
@@ -1950,52 +2455,99 @@
     }
 
     /* -----------------------------------------------------------------------
-       D. Barrier RFID Simulator Logic
+       F. Live FastAPI Barrier Simulator (POST /api/simulator/check-in & reset)
        ----------------------------------------------------------------------- */
-    function autoFillVoucher() {
-      document.getElementById('sim-voucher-id').value = 'VOUCH-MY-' + Math.floor(1000 + Math.random() * 9000);
+    async function autoFillVoucher() {
+      const input = document.getElementById('sim-voucher-id');
+      const log = document.getElementById('sim-log');
+
+      if (lastCreatedBookingId) {
+        input.value = lastCreatedBookingId;
+        log.innerText = `Loaded your newly created booking ID: ${lastCreatedBookingId}`;
+        return;
+      }
+
+      try {
+        const list = await apiFetch('/api/bookings?status=confirmed');
+        if (Array.isArray(list) && list.length > 0) {
+          input.value = list[0].id;
+          log.innerText = `Loaded live confirmed booking from SQLite: ${list[0].id} (${list[0].customer_name})`;
+        } else {
+          log.innerHTML = `<span style="color: #fbbf24;">No confirmed bookings found yet — reserve any spot above first!</span>`;
+        }
+      } catch {
+        const demoCode = 'DEMO-' + Math.floor(1000 + Math.random() * 9000);
+        input.value = demoCode;
+        log.innerText = `Backend offline — filled preview voucher ${demoCode}`;
+      }
     }
 
-    function triggerSimCheckIn() {
+    async function triggerSimCheckIn() {
       const code = document.getElementById('sim-voucher-id').value.trim();
       const log = document.getElementById('sim-log');
       const arm = document.getElementById('barrier-arm');
       const status = document.getElementById('barrier-status');
 
       if (!code) {
-        log.innerHTML = `<span style="color: #ef4444;">[400 Error]: Voucher ID is required.</span>`;
+        log.innerHTML = `<span style="color: #ef4444;">[400] Enter a booking ID (or click Auto-fill).</span>`;
         return;
       }
 
-      log.innerHTML = `[Request]: POST /api/simulator/check-in (${code})...<br>[Database]: Verified active booking interval. Status: confirmed &rarr; checked_in.`;
-      arm.classList.add('open');
-      status.innerHTML = `<span style="color: #34d399;">ARM RAISED &bull; VEHICLE PASSAGE AUTHORIZED (60s)</span>`;
+      try {
+        const res = await apiFetch('/api/simulator/check-in', {
+          method: 'POST',
+          body: { booking_id: code },
+        });
+        arm.classList.add('open');
+        status.innerHTML = `<span style="color: #34d399;">ARM RAISED &bull; ACCESS AUTHORIZED</span>`;
+        log.innerHTML = `<span style="color: #34d399;">[200 OK] Checked in booking <code>${escapeHtml(res.booking.id)}</code> at ${escapeHtml(res.spot.name)}.</span><br>${escapeHtml(res.notice)}`;
+        await loadLiveSpotShareData();
+      } catch (err) {
+        if (code.startsWith('DEMO-') || !backendOnline) {
+          arm.classList.add('open');
+          status.innerHTML = `<span style="color: #34d399;">ARM RAISED &bull; OFFLINE PREVIEW</span>`;
+          log.innerHTML = `[Offline Preview] Simulated gate open for <code>${escapeHtml(code)}</code>.`;
+        } else {
+          arm.classList.remove('open');
+          status.innerHTML = `<span style="color: #f43f5e;">ACCESS DENIED &bull; ARM LOCKED</span>`;
+          log.innerHTML = `<span style="color: #fda4af;">[${err.status || 'Error'}] ${escapeHtml(err.message)}</span>`;
+        }
+      }
     }
 
-    function resetSimBarrier() {
+    async function resetSimBarrier() {
       const arm = document.getElementById('barrier-arm');
       const status = document.getElementById('barrier-status');
       const log = document.getElementById('sim-log');
       arm.classList.remove('open');
       status.innerHTML = `ARM LOWERED &bull; ACCESS LOCKED`;
-      log.innerHTML = `Status: Ready. Barrier arm restored to home position.`;
+
+      try {
+        const res = await apiFetch('/api/simulator/reset', { method: 'POST' });
+        log.innerText = `[200 OK] Barrier closed. ${res.bookings_reset} checked-in booking(s) restored to confirmed.`;
+        await loadLiveSpotShareData();
+      } catch {
+        log.innerText = `Status: Ready. Barrier arm restored to lowered position.`;
+      }
     }
 
     /* -----------------------------------------------------------------------
-       E. FAQ Accordion Logic
+       G. FAQ, Search, Mode Switcher & Tagline Scroll Reveal
        ----------------------------------------------------------------------- */
     function toggleFaq(btn) {
       const item = btn.parentElement;
       const content = item.querySelector('.faq-content');
       const isOpen = item.classList.contains('open');
 
-      document.querySelectorAll('.faq-item').forEach(i => {
+      document.querySelectorAll('.faq-item').forEach((i) => {
         i.classList.remove('open');
+        i.querySelector('.faq-trigger')?.setAttribute('aria-expanded', 'false');
         i.querySelector('.faq-content').style.maxHeight = null;
       });
 
       if (!isOpen) {
         item.classList.add('open');
+        btn.setAttribute('aria-expanded', 'true');
         content.style.maxHeight = content.scrollHeight + 'px';
       }
     }
@@ -2006,13 +2558,11 @@
 
     function handleHeroSearch(e) {
       e.preventDefault();
+      renderStations(currentStationFilter);
       scrollToNetwork();
     }
 
-    /* -----------------------------------------------------------------------
-       F. Mode Switcher (Parking vs EV) & Shader Color Shift
-       ----------------------------------------------------------------------- */
-    let currentAppMode = 0.0; // 0.0 = Parking Blue, 1.0 = EV Emerald
+    let currentAppMode = 0.0;
 
     function setAppMode(mode) {
       const btnParking = document.getElementById('mode-btn-parking');
@@ -2031,64 +2581,55 @@
         btnParking.className = 'mode-btn';
         btnEv.setAttribute('aria-checked', 'true');
         btnParking.setAttribute('aria-checked', 'false');
-        filterStations('fast-ev');
+        filterStations('ev');
       }
     }
 
-    /* -----------------------------------------------------------------------
-       G. Tagline Word-by-Word Scroll Reveal (Per landing-page-design B11)
-       ----------------------------------------------------------------------- */
     function setupTaglineReveal() {
       const target = document.getElementById('reveal-target');
       if (!target) return;
 
       const words = target.innerText.trim().split(/\s+/);
-      target.innerHTML = words.map(w => {
-        const isAccent = w.toLowerCase().includes('kilowatt') || w.toLowerCase().includes('guaranteed');
-        return `<span class="reveal-word ${isAccent ? 'accent-word' : ''}">${w}</span>`;
-      }).join(' ');
+      target.innerHTML = words
+        .map((w) => {
+          const isAccent = w.toLowerCase().includes('kilowatt') || w.toLowerCase().includes('guaranteed');
+          return `<span class="reveal-word ${isAccent ? 'accent-word' : ''}">${w}</span>`;
+        })
+        .join(' ');
 
       const spans = target.querySelectorAll('.reveal-word');
+      let rafId = 0;
 
-      const onScrollThrottled = () => {
+      const updateReveal = () => {
+        rafId = 0;
         const rect = target.getBoundingClientRect();
         const windowHeight = window.innerHeight;
-
-        // Progress 0 to 1 based on viewport entry
         const progress = Math.min(Math.max((windowHeight * 0.85 - rect.top) / (rect.height + windowHeight * 0.4), 0), 1);
         const countToReveal = Math.floor(progress * spans.length * 1.3);
 
         spans.forEach((span, idx) => {
-          if (idx <= countToReveal) {
-            span.classList.add('revealed');
-          } else {
-            span.classList.remove('revealed');
-          }
+          if (idx <= countToReveal) span.classList.add('revealed');
+          else span.classList.remove('revealed');
         });
       };
 
-      window.addEventListener('scroll', () => {
-        requestAnimationFrame(onScrollThrottled);
-      }, { passive: true });
-
-      onScrollThrottled();
+      window.addEventListener(
+        'scroll',
+        () => {
+          if (!rafId) rafId = requestAnimationFrame(updateReveal);
+        },
+        { passive: true }
+      );
+      updateReveal();
     }
 
     /* ═══════════════════════════════════════════════════════════════════════
        H. FULL-SCREEN WEBGL CUSTOM GLSL SHADER PIPELINE
-       Features:
-       - Multi-octave Simplex / Wave turbulence displacement
-       - Real-time Cursor tracking and interactive liquid ripples
-       - 4x4 Bayer Matrix Hardware Dithering in GLSL
-       - Smooth Mode Morphing between Sapphire Blue (#2563eb) & Cyber Emerald (#10b981)
-       - Pauses automatically when tab is hidden or canvas is out of view
        ═══════════════════════════════════════════════════════════════════════ */
     const canvas = document.getElementById('shader-stage');
     const gl = canvas.getContext('webgl', { antialias: false, powerPreference: 'high-performance' });
 
-    if (!gl) {
-      console.warn("WebGL not supported; falling back to CSS background.");
-    } else {
+    if (gl) {
       const vertexSource = `
         attribute vec2 a_position;
         varying vec2 v_uv;
@@ -2103,10 +2644,9 @@
         uniform vec2 u_resolution;
         uniform vec2 u_mouse;
         uniform float u_time;
-        uniform float u_mode; // 0.0 = Parking Blue, 1.0 = EV Emerald
+        uniform float u_mode;
         varying vec2 v_uv;
 
-        // 4x4 Bayer Dithering Matrix
         float bayer4(vec2 p) {
           mat4 m = mat4(
              0.0/16.0, 12.0/16.0,  3.0/16.0, 15.0/16.0,
@@ -2127,7 +2667,6 @@
           }
         }
 
-        // Noise functions
         vec3 hash3(vec2 p) {
           vec3 q = vec3(dot(p, vec2(127.1, 311.7)),
                         dot(p, vec2(269.5, 183.3)),
@@ -2161,23 +2700,18 @@
           m.y = 1.0 - m.y;
           m.x *= aspect;
 
-          // Interactive mouse displacement wave
           float distToMouse = length(p - m);
           float mouseWave = sin(distToMouse * 14.0 - u_time * 3.5) * exp(-distToMouse * 3.0) * 0.12;
 
-          // Wavy electromagnetic field topology
           float t = u_time * 0.35;
           vec2 flow = vec2(sin(p.y * 2.5 + t), cos(p.x * 2.5 + t)) * 0.25;
           float v = voronoi(p * 2.5 + flow + mouseWave);
 
-          // Dual Theme Color Palettes:
-          // Mode 0: Royal Sapphire Blue (#0b1120 -> #1e3a8a -> #2563eb -> #06b6d4)
           vec3 blueVoid = vec3(0.04, 0.07, 0.15);
           vec3 blueMid  = vec3(0.12, 0.23, 0.55);
           vec3 blueGlow = vec3(0.15, 0.39, 0.92);
           vec3 cyanBeam = vec3(0.02, 0.71, 0.83);
 
-          // Mode 1: Cyber Emerald & Electric Neon (#060913 -> #064e3b -> #10b981 -> #34d399)
           vec3 greenVoid = vec3(0.02, 0.05, 0.08);
           vec3 greenMid  = vec3(0.03, 0.31, 0.23);
           vec3 greenGlow = vec3(0.06, 0.73, 0.51);
@@ -2188,17 +2722,14 @@
           vec3 baseGlow = mix(blueGlow, greenGlow, u_mode);
           vec3 baseBeam = mix(cyanBeam, greenBeam, u_mode);
 
-          // Composite wave color ramp
           float intensity = smoothstep(0.85, 0.15, v);
           vec3 col = mix(baseVoid, baseMid, intensity);
           col = mix(col, baseGlow, smoothstep(0.4, 0.9, intensity + mouseWave * 1.5));
           col += baseBeam * pow(intensity, 4.0) * 0.45;
 
-          // Vignette
           float vig = 16.0 * st.x * st.y * (1.0 - st.x) * (1.0 - st.y);
           col *= clamp(pow(vig, 0.28), 0.0, 1.0);
 
-          // Bayer 4x4 matrix dithering step
           float dither = bayer4(gl_FragCoord.xy);
           col += (dither - 0.5) * 0.032;
 
@@ -2206,13 +2737,12 @@
         }
       `;
 
-      function createShader(gl, type, source) {
-        const shader = gl.createShader(type);
-        gl.shaderSource(shader, source);
-        gl.compileShader(shader);
-        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-          console.error(gl.getShaderInfoLog(shader));
-          gl.deleteShader(shader);
+      function createShader(glCtx, type, source) {
+        const shader = glCtx.createShader(type);
+        glCtx.shaderSource(shader, source);
+        glCtx.compileShader(shader);
+        if (!glCtx.getShaderParameter(shader, glCtx.COMPILE_STATUS)) {
+          glCtx.deleteShader(shader);
           return null;
         }
         return shader;
@@ -2227,14 +2757,11 @@
 
       const posBuffer = gl.createBuffer();
       gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
-      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-        -1.0, -1.0,
-         1.0, -1.0,
-        -1.0,  1.0,
-        -1.0,  1.0,
-         1.0, -1.0,
-         1.0,  1.0
-      ]), gl.STATIC_DRAW);
+      gl.bufferData(
+        gl.ARRAY_BUFFER,
+        new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]),
+        gl.STATIC_DRAW
+      );
 
       const aPosition = gl.getAttribLocation(program, 'a_position');
       gl.enableVertexAttribArray(aPosition);
@@ -2266,12 +2793,12 @@
       window.addEventListener('resize', resizeCanvas);
       resizeCanvas();
 
-      window.addEventListener('mousemove', e => {
+      window.addEventListener('mousemove', (e) => {
         targetMouseX = e.clientX;
         targetMouseY = e.clientY;
       }, { passive: true });
 
-      window.addEventListener('touchmove', e => {
+      window.addEventListener('touchmove', (e) => {
         if (e.touches.length > 0) {
           targetMouseX = e.touches[0].clientX;
           targetMouseY = e.touches[0].clientY;
@@ -2283,16 +2810,11 @@
         if (isRenderLoopActive) requestAnimationFrame(render);
       });
 
-      let startTime = performance.now();
-
+      const startTime = performance.now();
       function render(now) {
         if (!isRenderLoopActive) return;
-
-        // Smooth mouse damping
         mouseX += (targetMouseX - mouseX) * 0.08;
         mouseY += (targetMouseY - mouseY) * 0.08;
-
-        // Smooth mode morphing
         interpolatedMode += (currentAppMode - interpolatedMode) * 0.06;
 
         const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -2301,22 +2823,29 @@
         gl.uniform2f(uMouse, mouseX * dpr, mouseY * dpr);
         gl.uniform1f(uTime, (now - startTime) * 0.001);
         gl.uniform1f(uMode, interpolatedMode);
-
         gl.drawArrays(gl.TRIANGLES, 0, 6);
-
         requestAnimationFrame(render);
       }
-
       requestAnimationFrame(render);
     }
 
     /* -----------------------------------------------------------------------
-       I. Initialization on DOM Load
+       I. Initialization & Keyboard Shortcuts
        ----------------------------------------------------------------------- */
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeBookingModal();
+    });
+
+    document.getElementById('booking-modal').addEventListener('click', (e) => {
+      if (e.target.id === 'booking-modal') closeBookingModal();
+    });
+
     document.addEventListener('DOMContentLoaded', () => {
+      applyPortalLinks();
       renderStations('all');
       setupTaglineReveal();
       updateHostEarnings();
+      loadLiveSpotShareData();
     });
   </script>
 </body>

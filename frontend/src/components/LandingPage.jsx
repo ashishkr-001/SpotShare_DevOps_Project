@@ -1,219 +1,323 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import SpotShareLogo from './SpotShareLogo.jsx'
+import ShaderBackdrop from './ShaderBackdrop.jsx'
 import './LandingPage.css'
 
-const TAGLINE_WORDS = (
-  'Know your spot is waiting before you start the engine. ' +
-  'SpotShare lets Mysuru vehicle owners book live parking bays and EV chargers ahead of time.'
-).split(' ')
+const API_BASE = (
+  import.meta.env.VITE_API_BASE_URL ||
+  (typeof window !== 'undefined' && window.location.hostname
+    ? `http://${window.location.hostname}:8000`
+    : 'http://localhost:8000')
+).replace(/\/+$/, '')
 
-const DRIVER_STEPS = [
-  {
-    num: '01',
-    title: 'Search nearby bays or chargers',
-    detail:
-      'Filter live locations across Mysuru by distance, vehicle type, AC or DC charger output, connector type, and hourly rate.',
-  },
-  {
-    num: '02',
-    title: 'Reserve your exact time window',
-    detail:
-      'Pick your arrival and departure times from 30 minutes up to 24 hours with instant conflict checks and clear price estimates.',
-  },
-  {
-    num: '03',
-    title: 'Navigate directly and check in',
-    detail:
-      'Launch Google Maps GPS directions right from your spot card or map drawer, and manage or cancel bookings anytime.',
-  },
-]
-
-const HOST_STEPS = [
-  {
-    num: '01',
-    title: 'Publish your EV bay in minutes',
-    detail:
-      'Enter your station address or auto detect GPS coordinates, set your hourly price, kW power rating, bay count, and amenities.',
-  },
-  {
-    num: '02',
-    title: 'Pause anytime when out of town',
-    detail:
-      'Use Turn Off / Close to pause new bookings temporarily while preserving your listing details, rating, and booking history.',
-  },
-  {
-    num: '03',
-    title: 'Monitor live bookings and earnings',
-    detail:
-      'View active reservations, 6 hour bay utilization, and total booked revenue from one dedicated Host Hub dashboard.',
-  },
-]
+const TAGLINE_WORDS =
+  'Every kilowatt accounted for. Every parking bay guaranteed before your vehicle rolls out of the driveway.'.split(
+    ' '
+  )
 
 const FAQS = [
   {
-    q: 'How long can I book a parking spot or EV charger for?',
-    a: 'You can reserve any open bay from 30 minutes up to 24 hours. SpotShare checks live availability for your chosen arrival and departure times and shows the total estimated cost before you confirm.',
+    q: 'How do I find and reserve a parking spot or EV charger near me?',
+    a: 'Switch between Parking and EV Charging, search by Mysuru area or use GPS location inside the marketplace, compare live open bays and hourly rates, and lock in your exact time window.',
   },
   {
-    q: 'Which vehicle types and EV chargers are supported?',
-    a: 'Parking hubs support cars, bikes, and vans, with filters for covered spaces and 24/7 CCTV. EV listings cover home AC chargers (7.4 kW and 11 kW Type 2) as well as commercial fast AC and DC stations (22 kW and 50 kW CCS2).',
+    q: 'What happens if I arrive earlier or need to cancel my reservation?',
+    a: 'Barrier check-in opens 15 minutes before your booked start time. Confirmed bookings that have not checked in can also be cancelled anytime from My Bookings, immediately freeing the bay.',
   },
   {
-    q: 'Can I cancel a reservation if my plans change?',
-    a: 'Yes. Confirmed bookings that have not started or checked in can be cancelled anytime from My Bookings, freeing up the bay immediately for other vehicle owners.',
+    q: 'Can private homeowners list an EV charger on SpotShare?',
+    a: 'Yes. Open the Host Hub portal to publish residential or commercial chargers with GPS auto-detection, hourly pricing, charger kW rating, supported vehicle types, and Turn Off / Close controls when out of town.',
   },
   {
-    q: 'How do I get directions to my booked spot or charger?',
-    a: 'Every spot card, interactive map pin, and booking confirmation voucher includes a one tap Google Maps link that opens turn by turn GPS directions straight to the location.',
+    q: 'Can hosts pause their station temporarily without deleting their listing?',
+    a: 'Yes. Hosts can use Turn Off / Close inside Host Hub at any time. Closed chargers stop accepting new reservations and update live Mysuru Hubs Online counts until reopened, while keeping your listing intact.',
   },
   {
-    q: 'Can I reserve a spot in advance, or only for right now?',
-    a: 'You can do both. Book an open bay immediately for a current trip, or schedule your arrival and departure times ahead of time so a space is waiting when you arrive.',
+    q: 'Which vehicles and EV charger speeds are supported?',
+    a: 'SpotShare supports Cars (4-Wheelers), Bikes (2-Wheelers), and Vans/SUVs across Mysuru parking lots and EV hubs, ranging from 7.4 kW home chargers to 22 kW+ fast charging stations.',
   },
   {
-    q: 'Are the parking spaces and chargers safe and monitored?',
-    a: 'Yes. Every listing shows verified site amenities upfront, such as covered bays, 24/7 security, CCTV cameras, and lighting, so you can choose a spot you trust before booking.',
+    q: 'Do I receive confirmation details for my bookings?',
+    a: 'Yes. Every confirmed reservation shows a live pass in My Bookings with directions, bay summary, and total cost, and SpotShare sends booking confirmation emails when an email address is on your account.',
   },
 ]
 
-function TaglineRevealSection() {
-  const sectionRef = useRef(null)
-  const [activeCount, setActiveCount] = useState(0)
+function haversineKm(lat1, lon1, lat2, lon2) {
+  const toRad = (deg) => (deg * Math.PI) / 180
+  const R = 6371.0088
+  const dLat = toRad(lat2 - lat1)
+  const dLon = toRad(lon2 - lon1)
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2
+  return 2 * R * Math.asin(Math.sqrt(a))
+}
 
+function isPrivateSpot(spot) {
+  const owner = String(spot?.owner_name || '').trim().toLowerCase()
+  if (owner && owner !== 'demo host') return true
+  const am = (spot?.amenities || []).map((a) => String(a).toLowerCase())
+  return am.some((a) => a.includes('private') || a.includes('home'))
+}
+
+async function fetchApiJson(path, options = {}) {
+  const res = await fetch(`${API_BASE}${path}`, {
+    headers: options.body ? { 'Content-Type': 'application/json' } : undefined,
+    ...options,
+    body: options.body ? JSON.stringify(options.body) : undefined,
+  })
+  let data = null
+  try {
+    data = await res.json()
+  } catch {
+    data = null
+  }
+  if (!res.ok) {
+    const err = new Error(
+      data && typeof data.detail === 'string' ? data.detail : `Request failed (${res.status})`
+    )
+    err.status = res.status
+    err.data = data
+    throw err
+  }
+  return data
+}
+
+export default function LandingPage({ spots = [], onOpenAuth, isLeaving = false }) {
+  const taglineRef = useRef(null)
+
+  const [liveSpots, setLiveSpots] = useState(spots)
+  const [insights, setInsights] = useState(null)
+  const [backendOnline, setBackendOnline] = useState(false)
+
+  const [appMode, setAppMode] = useState('parking')
+  const [stationFilter, setStationFilter] = useState('all')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [vehicleFilter, setVehicleFilter] = useState('all')
+  const [defaultDuration, setDefaultDuration] = useState('2')
+  const [userLocation, setUserLocation] = useState({ latitude: 12.2958, longitude: 76.6394 })
+  const [gpsStatus, setGpsStatus] = useState('Use My GPS')
+
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [revealedWords, setRevealedWords] = useState(0)
+
+  // Booking modal state
+  const [bookingSpot, setBookingSpot] = useState(null)
+  const [driverName, setDriverName] = useState('Showcase Driver')
+  const [driverEmail, setDriverEmail] = useState('')
+  const [bookingVehicle, setBookingVehicle] = useState('car')
+  const [bookingHours, setBookingHours] = useState(2)
+  const [bookingBusy, setBookingBusy] = useState(false)
+  const [bookingFeedback, setBookingFeedback] = useState(null)
+
+  const [openFaqIdx, setOpenFaqIdx] = useState(-1)
+
+  useEffect(() => {
+    if (Array.isArray(spots) && spots.length > 0) {
+      setLiveSpots(spots)
+    }
+  }, [spots])
+
+  const refreshLiveBackend = useCallback(async () => {
+    try {
+      const [health, spotsData, insightsData] = await Promise.all([
+        fetchApiJson('/api/health'),
+        fetchApiJson('/api/spots'),
+        fetchApiJson('/api/insights').catch(() => null),
+      ])
+      setBackendOnline(Boolean(health && health.status === 'ok'))
+      if (Array.isArray(spotsData) && spotsData.length > 0) {
+        setLiveSpots(spotsData)
+      }
+      if (insightsData) setInsights(insightsData)
+    } catch {
+      setBackendOnline(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    refreshLiveBackend()
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') {
+        refreshLiveBackend()
+      }
+    }
+    window.addEventListener('focus', refreshLiveBackend)
+    document.addEventListener('visibilitychange', onVisible)
+    return () => {
+      window.removeEventListener('focus', refreshLiveBackend)
+      document.removeEventListener('visibilitychange', onVisible)
+    }
+  }, [refreshLiveBackend])
+
+  // Word-by-word tagline scroll reveal
   useEffect(() => {
     const reduced =
       typeof window !== 'undefined' &&
       window.matchMedia &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches
-
     if (reduced) {
-      setActiveCount(TAGLINE_WORDS.length)
+      setRevealedWords(TAGLINE_WORDS.length)
       return
     }
 
     let rafId = 0
-    const updateProgress = () => {
+    const updateReveal = () => {
       rafId = 0
-      const el = sectionRef.current
+      const el = taglineRef.current
       if (!el) return
       const rect = el.getBoundingClientRect()
       const vh = window.innerHeight || 800
-      const start = vh * 0.85
-      const end = vh * 0.25
-      const raw = (start - rect.top) / Math.max(1, start - end)
-      const clamped = Math.max(0, Math.min(1, raw))
-      const count = Math.round(clamped * TAGLINE_WORDS.length)
-      setActiveCount((prev) => (count > prev ? count : prev))
+      const progress = Math.min(
+        Math.max((vh * 0.85 - rect.top) / (rect.height + vh * 0.4), 0),
+        1
+      )
+      setRevealedWords(Math.floor(progress * TAGLINE_WORDS.length * 1.3))
     }
 
     const onScroll = () => {
-      if (!rafId) rafId = window.requestAnimationFrame(updateProgress)
+      if (!rafId) rafId = requestAnimationFrame(updateReveal)
     }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((entry) => entry.isIntersecting)) {
-          updateProgress()
-          window.addEventListener('scroll', onScroll, { passive: true })
-        }
-      },
-      { threshold: 0.05 }
-    )
-
-    if (sectionRef.current) observer.observe(sectionRef.current)
-    updateProgress()
-
+    window.addEventListener('scroll', onScroll, { passive: true })
+    updateReveal()
     return () => {
-      observer.disconnect()
       window.removeEventListener('scroll', onScroll)
-      if (rafId) window.cancelAnimationFrame(rafId)
+      if (rafId) cancelAnimationFrame(rafId)
     }
   }, [])
 
-  return (
-    <section ref={sectionRef} className="landing-tagline-section" aria-label="SpotShare mission">
-      <div className="landing-container landing-tagline-wrap">
-        <p className="landing-tagline-text">
-          {TAGLINE_WORDS.map((word, idx) => (
-            <span
-              key={`${word}-${idx}`}
-              className={`tagline-word ${idx < activeCount ? 'is-revealed' : ''}`}
-            >
-              {word}{' '}
-            </span>
-          ))}
-        </p>
-      </div>
-    </section>
-  )
-}
-
-export default function LandingPage({ spots = [], onOpenAuth, isLeaving = false }) {
-  const [previewCategory, setPreviewCategory] = useState('ev')
-  const [flowRole, setFlowRole] = useState('driver')
-  const [openFaqIdx, setOpenFaqIdx] = useState(-1)
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-
+  // Close modal / mobile menu on Escape
   useEffect(() => {
-    const els = document.querySelectorAll('.landing-reveal')
-    if (!els.length) return
-
-    const reduced =
-      typeof window !== 'undefined' &&
-      window.matchMedia &&
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches
-
-    if (reduced || typeof IntersectionObserver === 'undefined') {
-      els.forEach((el) => el.classList.add('is-visible'))
-      return
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('is-visible')
-            observer.unobserve(entry.target)
-          }
-        })
-      },
-      { threshold: 0.12 }
-    )
-    els.forEach((el) => observer.observe(el))
-    return () => observer.disconnect()
-  }, [])
-
-  useEffect(() => {
-    if (!mobileMenuOpen) return
     const onKey = (e) => {
-      if (e.key === 'Escape') setMobileMenuOpen(false)
+      if (e.key === 'Escape') {
+        setBookingSpot(null)
+        setMobileMenuOpen(false)
+      }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [mobileMenuOpen])
+  }, [])
 
-  const parkingSpots = useMemo(() => spots.filter((s) => !s.ev_charging), [spots])
-  const evSpots = useMemo(() => spots.filter((s) => s.ev_charging), [spots])
+  const telemetry = useMemo(() => {
+    const openSpots = liveSpots.filter((s) => s.is_active !== false && s.status !== 'closed')
+    const freeBays =
+      insights?.summary?.available_spaces ??
+      openSpots.reduce((sum, s) => sum + Number(s.available_spaces ?? s.capacity ?? 0), 0)
+    const totalKw = openSpots
+      .filter((s) => s.ev_charging && s.charger_power_kw)
+      .reduce((sum, s) => sum + Number(s.charger_power_kw || 0), 0)
+    const prices = openSpots.map((s) => Number(s.price_per_hour)).filter((n) => Number.isFinite(n))
+    const cheapest =
+      insights?.cheapest_available_spot?.price_per_hour ??
+      (prices.length ? Math.min(...prices) : 14)
 
-  const previewList = useMemo(
-    () => (previewCategory === 'ev' ? evSpots : parkingSpots),
-    [previewCategory, evSpots, parkingSpots]
-  )
+    return {
+      freeBays,
+      totalKw: Math.round(totalKw),
+      totalHubs: insights?.summary?.active_spots ?? openSpots.length,
+      cheapest,
+    }
+  }, [liveSpots, insights])
 
-  const rateRange = useMemo(() => {
-    const prices = spots
-      .map((s) => Number(s.price_per_hour))
-      .filter((n) => Number.isFinite(n) && n >= 0)
-    if (!prices.length) return '₹14–₹35'
-    const min = Math.round(Math.min(...prices))
-    const max = Math.round(Math.max(...prices))
-    return min === max ? `₹${min}` : `₹${min}–₹${max}`
-  }, [spots])
+  const filteredSpots = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase()
+    return liveSpots
+      .map((s) => ({
+        ...s,
+        _dist:
+          typeof s.distance_km === 'number'
+            ? s.distance_km
+            : haversineKm(userLocation.latitude, userLocation.longitude, s.latitude, s.longitude),
+      }))
+      .sort((a, b) => a._dist - b._dist)
+      .filter((s) => {
+        if (q && !`${s.name} ${s.address}`.toLowerCase().includes(q)) return false
+        if (vehicleFilter !== 'all' && Array.isArray(s.vehicle_types) && !s.vehicle_types.includes(vehicleFilter)) {
+          return false
+        }
+        if (stationFilter === 'parking') return !s.ev_charging
+        if (stationFilter === 'ev') return Boolean(s.ev_charging)
+        if (stationFilter === 'fast-ev') return Boolean(s.ev_charging) && Number(s.charger_power_kw || 0) >= 20
+        if (stationFilter === 'private') return isPrivateSpot(s)
+        return true
+      })
+      .slice(0, 9)
+  }, [liveSpots, searchQuery, vehicleFilter, stationFilter, userLocation])
 
-  const scrollToSection = (id) => {
+  const scrollTo = (id) => {
     setMobileMenuOpen(false)
-    const target = document.getElementById(id)
-    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    const el = document.getElementById(id)
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
+  const switchMode = (mode) => {
+    setAppMode(mode)
+    setStationFilter(mode === 'ev' ? 'ev' : 'parking')
+  }
+
+  const handleUseGps = () => {
+    if (!navigator.geolocation) return
+    setGpsStatus('Locating...')
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setUserLocation({ latitude: pos.coords.latitude, longitude: pos.coords.longitude })
+        setGpsStatus('GPS Active')
+      },
+      () => setGpsStatus('Mysuru Default'),
+      { timeout: 6000 }
+    )
+  }
+
+  const openModal = (spot) => {
+    // Booking requires an account: send visitors to Customer Login instead of reserving as a guest.
+    if (typeof onOpenAuth === 'function') {
+      onOpenAuth('login')
+      return
+    }
+    setBookingSpot(spot)
+    const allowed = Array.isArray(spot.vehicle_types) && spot.vehicle_types.length ? spot.vehicle_types : ['car']
+    setBookingVehicle(allowed[0])
+    setBookingHours(Number(defaultDuration) || 2)
+    setBookingFeedback(null)
+  }
+
+  const submitBooking = async (e) => {
+    e.preventDefault()
+    if (!bookingSpot) return
+    setBookingBusy(true)
+    setBookingFeedback(null)
+
+    const startDt = new Date()
+    const endDt = new Date(startDt.getTime() + bookingHours * 3600 * 1000)
+
+    try {
+      const created = await fetchApiJson('/api/bookings', {
+        method: 'POST',
+        body: {
+          spot_id: bookingSpot.id,
+          customer_name: driverName.trim() || 'Showcase Driver',
+          customer_email: driverEmail.trim() || null,
+          start_time: startDt.toISOString(),
+          end_time: endDt.toISOString(),
+          vehicle_type: bookingVehicle,
+          requires_ev_charging: Boolean(bookingSpot.ev_charging),
+        },
+      })
+      setBookingFeedback({
+        kind: 'success',
+        bookingId: created.id,
+        totalPrice: created.total_price,
+        emailSent: created.email_sent,
+      })
+      await refreshLiveBackend()
+    } catch (err) {
+      setBookingFeedback({
+        kind: 'error',
+        message: err.message,
+      })
+    } finally {
+      setBookingBusy(false)
+    }
   }
 
   return (
@@ -222,521 +326,643 @@ export default function LandingPage({ spots = [], onOpenAuth, isLeaving = false 
         Skip to content
       </a>
 
-      {/* Sticky Compact Navigation Bar */}
-      <header className="landing-nav-shell">
-        <nav className="landing-nav" aria-label="Primary navigation">
-          <a
-            href="#top"
-            className="landing-brand"
-            onClick={(e) => {
-              e.preventDefault()
-              window.scrollTo({ top: 0, behavior: 'smooth' })
-            }}
-          >
-            <SpotShareLogo size={34} category="parking" />
-            <span className="landing-brand-text">
-              <span className="brand-text-spot">Spot</span>
-              <span className="brand-text-share">Share</span>
-            </span>
-          </a>
+      <ShaderBackdrop mode={appMode} />
 
-          <div className="landing-nav-links">
-            <button type="button" className="landing-nav-link" onClick={() => scrollToSection('features')}>
-              Features
-            </button>
-            <button type="button" className="landing-nav-link" onClick={() => scrollToSection('how-it-works')}>
-              How it works
-            </button>
-            <button type="button" className="landing-nav-link" onClick={() => scrollToSection('faq')}>
-              FAQ
-            </button>
-          </div>
-
-          <div className="landing-nav-actions">
-            <button
-              type="button"
-              className="btn-landing-host"
-              onClick={() => onOpenAuth('host')}
+      <div className="landing-scroller">
+        {/* Sticky Floating Navigation */}
+        <header className="landing-nav-shell">
+          <nav className="landing-nav" aria-label="Primary navigation">
+            <a
+              href="#top"
+              className="landing-brand"
+              onClick={(e) => {
+                e.preventDefault()
+                window.scrollTo({ top: 0, behavior: 'smooth' })
+              }}
             >
-              Host Hub
-            </button>
-            <button
-              type="button"
-              className="btn-landing-login"
-              onClick={() => onOpenAuth('login')}
-            >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
-                <polyline points="10 17 15 12 10 7" />
-                <line x1="15" y1="12" x2="3" y2="12" />
-              </svg>
-              <span>Login</span>
-            </button>
+              <SpotShareLogo size={32} category={appMode} />
+              <span className="landing-brand-text">
+                <span className="brand-text-spot">Spot</span>
+                <span className="brand-text-share">Share</span>
+              </span>
+            </a>
 
-            <button
-              type="button"
-              className="landing-mobile-toggle"
-              aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
-              aria-expanded={mobileMenuOpen}
-              onClick={() => setMobileMenuOpen((v) => !v)}
-            >
-              {mobileMenuOpen ? (
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
-              ) : (
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <line x1="4" y1="7" x2="20" y2="7" />
-                  <line x1="4" y1="12" x2="20" y2="12" />
-                  <line x1="4" y1="17" x2="20" y2="17" />
-                </svg>
-              )}
-            </button>
-          </div>
-        </nav>
-
-        {/* Full-height Mobile Drawer */}
-        {mobileMenuOpen && (
-          <div className="landing-mobile-panel" role="dialog" aria-label="Mobile navigation">
-            <div className="landing-mobile-links">
-              <button type="button" style={{ '--stagger': '0ms' }} onClick={() => scrollToSection('features')}>
-                Features
+            <div className="lp-mode-pill" role="radiogroup" aria-label="Marketplace Mode">
+              <button
+                type="button"
+                className={`lp-mode-btn ${appMode === 'parking' ? 'active-parking' : ''}`}
+                role="radio"
+                aria-checked={appMode === 'parking'}
+                onClick={() => switchMode('parking')}
+              >
+                Parking
               </button>
-              <button type="button" style={{ '--stagger': '60ms' }} onClick={() => scrollToSection('how-it-works')}>
-                How it works
+              <button
+                type="button"
+                className={`lp-mode-btn ${appMode === 'ev' ? 'active-ev' : ''}`}
+                role="radio"
+                aria-checked={appMode === 'ev'}
+                onClick={() => switchMode('ev')}
+              >
+                EV Charging
               </button>
-              <button type="button" style={{ '--stagger': '120ms' }} onClick={() => scrollToSection('faq')}>
+            </div>
+
+            <div className="landing-nav-links">
+              <button type="button" className="landing-nav-link" onClick={() => scrollTo('network')}>
+                Stations
+              </button>
+              <button type="button" className="landing-nav-link" onClick={() => scrollTo('host-hub')}>
+                Host Hub
+              </button>
+              <button type="button" className="landing-nav-link" onClick={() => scrollTo('faq')}>
                 FAQ
               </button>
             </div>
-            <div className="landing-mobile-ctas">
-              <button
-                type="button"
-                className="btn-landing-login"
-                style={{ width: '100%', justifyContent: 'center', padding: '12px 16px' }}
-                onClick={() => { setMobileMenuOpen(false); onOpenAuth('login') }}
-              >
-                Login as Customer or Host
+
+            <div className="landing-nav-actions">
+              <button type="button" className="btn-landing-host" onClick={() => onOpenAuth('host')}>
+                Host Hub Login
+              </button>
+              <button type="button" className="btn-landing-login" onClick={() => onOpenAuth('login')}>
+                <span>Customer Login</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
               </button>
               <button
                 type="button"
-                className="btn-landing-secondary"
-                style={{ width: '100%', justifyContent: 'center' }}
-                onClick={() => { setMobileMenuOpen(false); onOpenAuth('host') }}
+                className="landing-mobile-toggle"
+                aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+                aria-expanded={mobileMenuOpen}
+                onClick={() => setMobileMenuOpen((v) => !v)}
               >
-                Open Host Hub Login
+                {mobileMenuOpen ? '✕' : '☰'}
               </button>
             </div>
-          </div>
-        )}
-      </header>
+          </nav>
 
-      <main id="landing-main">
-        {/* Hero Section */}
-        <section id="top" className="landing-hero">
-          <div className="landing-container landing-hero-grid">
-            <div className="landing-hero-copy">
-              <div className="landing-eyebrow">
-                <span className="landing-live-dot" aria-hidden="true" />
-                <span>{spots.length || 16} verified parking &amp; EV locations across Mysuru</span>
+          {mobileMenuOpen && (
+            <div className="landing-mobile-panel" role="dialog" aria-label="Mobile navigation">
+              <div className="landing-mobile-links">
+                <button type="button" onClick={() => scrollTo('network')}>Stations</button>
+                <button type="button" onClick={() => scrollTo('host-hub')}>Host Hub</button>
+                <button type="button" onClick={() => scrollTo('faq')}>FAQ</button>
               </div>
-
-              <h1 className="landing-hero-title">
-                Find nearby parking
-                <br />
-                and EV chargers in seconds
-              </h1>
-
-              <p className="landing-hero-sub">
-                Compare real time bay availability, kW charging output, and transparent hourly rates before you drive, or share your home EV charger when your driveway is free.
-              </p>
-
-              <div className="landing-hero-actions">
+              <div className="landing-mobile-ctas">
                 <button
                   type="button"
-                  className="btn-landing-primary"
-                  onClick={() => onOpenAuth('login')}
+                  className="btn-landing-login"
+                  style={{ width: '100%', justifyContent: 'center', padding: '12px' }}
+                  onClick={() => {
+                    setMobileMenuOpen(false)
+                    onOpenAuth('login')
+                  }}
                 >
-                  <span>Reserve a spot</span>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <line x1="5" y1="12" x2="19" y2="12" />
-                    <polyline points="12 5 19 12 12 19" />
-                  </svg>
+                  Customer Login
                 </button>
                 <button
                   type="button"
-                  className="btn-landing-secondary"
-                  onClick={() => onOpenAuth('host')}
+                  className="btn-landing-host"
+                  style={{ width: '100%', textAlign: 'center', padding: '12px' }}
+                  onClick={() => {
+                    setMobileMenuOpen(false)
+                    onOpenAuth('host')
+                  }}
                 >
-                  List your EV charger
+                  Open Host Hub Login
                 </button>
               </div>
+            </div>
+          )}
+        </header>
 
-              <div className="landing-proof-strip">
-                <span className="landing-proof-item">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                  Instant time window locking
-                </span>
-                <span className="landing-proof-item">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                  Free cancellation before arrival
-                </span>
+        <main id="landing-main">
+          {/* Hero Section */}
+          <section id="top" className="lp-hero landing-container" aria-labelledby="hero-title">
+            <div className="lp-hero-eyebrow">
+              <span>
+                Mysuru Hyperlocal Grid &bull; {liveSpots.length} Verified Locations
+              </span>
+            </div>
+
+            <h1 className="lp-hero-title" id="hero-title">
+              Guaranteed parking bays.
+              <br />
+              <span className="lp-accent">High-speed EV charging.</span>
+              <br />
+              Zero street search friction.
+            </h1>
+
+            <p className="lp-hero-sub">
+              Stop circling crowded markets. Compare live bay availability, kW charging output, and transparent hourly rates across Mysuru, or list your home EV charger when your driveway is free.
+            </p>
+
+            {/* Search & Filter Bar */}
+            <div className="lp-control-card">
+              <form
+                className="lp-filter-form"
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  scrollTo('network')
+                }}
+              >
+                <div className="lp-input-group">
+                  <label className="lp-field-label" htmlFor="lp-search-loc">Destination or Area</label>
+                  <input
+                    id="lp-search-loc"
+                    type="text"
+                    className="lp-field-input"
+                    placeholder="e.g. Mysuru Palace, Gokulam, Mall..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+
+                <div className="lp-input-group">
+                  <label className="lp-field-label" htmlFor="lp-vehicle-sel">Vehicle Type</label>
+                  <select
+                    id="lp-vehicle-sel"
+                    className="lp-field-input"
+                    value={vehicleFilter}
+                    onChange={(e) => setVehicleFilter(e.target.value)}
+                  >
+                    <option value="all">All Vehicles</option>
+                    <option value="car">Car (4-Wheeler)</option>
+                    <option value="bike">Bike (2-Wheeler)</option>
+                    <option value="van">Van / SUV</option>
+                  </select>
+                </div>
+
+                <div className="lp-input-group">
+                  <label className="lp-field-label" htmlFor="lp-dur-sel">Duration</label>
+                  <select
+                    id="lp-dur-sel"
+                    className="lp-field-input"
+                    value={defaultDuration}
+                    onChange={(e) => setDefaultDuration(e.target.value)}
+                  >
+                    <option value="1">1 Hour</option>
+                    <option value="2">2 Hours</option>
+                    <option value="3">3 Hours</option>
+                    <option value="5">5 Hours</option>
+                  </select>
+                </div>
+
+                <button type="submit" className="lp-btn-search">
+                  <span>Explore Bays</span>
+                </button>
+              </form>
+            </div>
+
+
+            {/* Live Telemetry Strip */}
+            <div className="lp-telemetry-strip">
+              <div className="lp-telemetry-card">
+                <span className="lp-telemetry-num">{telemetry.freeBays}</span>
+                <span className="lp-telemetry-lbl">Available Bays Now</span>
+              </div>
+              <div className="lp-telemetry-card">
+                <span className="lp-telemetry-num">{telemetry.totalKw} kW</span>
+                <span className="lp-telemetry-lbl">Active Charger Capacity</span>
+              </div>
+              <div className="lp-telemetry-card">
+                <span className="lp-telemetry-num">{telemetry.totalHubs}</span>
+                <span className="lp-telemetry-lbl">Mysuru Hubs Online</span>
+              </div>
+              <div className="lp-telemetry-card">
+                <span className="lp-telemetry-num">&#8377;{telemetry.cheapest}/hr</span>
+                <span className="lp-telemetry-lbl">Lowest Open Rate</span>
+              </div>
+            </div>
+          </section>
+
+          {/* Live Stations Explorer */}
+          <section id="network" className="lp-section landing-container" aria-labelledby="spots-heading">
+            <div className="lp-section-header">
+              <div>
+                <span className="lp-tag">// Live Station Explorer</span>
+                <h2 className="lp-section-heading" id="spots-heading">Explore live stations near you.</h2>
+              </div>
+
+              <div className="lp-chips" role="group" aria-label="Filter stations">
+                {[
+                  { id: 'all', label: 'All Stations' },
+                  { id: 'parking', label: 'Parking Lots' },
+                  { id: 'ev', label: 'EV Charging' },
+                ].map((c) => (
+                  <button
+                    key={c.id}
+                    type="button"
+                    className={`lp-chip ${stationFilter === c.id ? 'active' : ''}`}
+                    onClick={() => setStationFilter(c.id)}
+                  >
+                    {c.label}
+                  </button>
+                ))}
               </div>
             </div>
 
-            {/* Interactive Marketplace Preview Card */}
-            <div className="landing-preview-card" aria-label="Live marketplace preview">
-              <div className="preview-card-header">
-                <div>
-                  <span className="preview-kicker">Live Availability Preview</span>
-                  <h2 className="preview-heading">Mysuru</h2>
-                </div>
-                <div className="preview-tabs" role="tablist" aria-label="Preview category">
+            <div className="lp-spots-grid">
+              {filteredSpots.length === 0 ? (
+                <div
+                  style={{
+                    gridColumn: '1 / -1',
+                    textAlign: 'center',
+                    padding: '48px 24px',
+                    background: 'rgba(17,26,46,0.7)',
+                    borderRadius: '20px',
+                    border: '1px solid var(--lp-border)',
+                  }}
+                >
+                  <p style={{ marginBottom: '14px', color: 'var(--lp-text-secondary)' }}>
+                    No stations matched your filters.
+                  </p>
                   <button
                     type="button"
-                    role="tab"
-                    aria-selected={previewCategory === 'ev'}
-                    className={`preview-tab ${previewCategory === 'ev' ? 'active ev' : ''}`}
-                    onClick={() => setPreviewCategory('ev')}
+                    className="lp-chip active"
+                    onClick={() => {
+                      setSearchQuery('')
+                      setVehicleFilter('all')
+                      setStationFilter('all')
+                    }}
                   >
-                    EV Charging ({evSpots.length})
-                  </button>
-                  <button
-                    type="button"
-                    role="tab"
-                    aria-selected={previewCategory === 'parking'}
-                    className={`preview-tab ${previewCategory === 'parking' ? 'active parking' : ''}`}
-                    onClick={() => setPreviewCategory('parking')}
-                  >
-                    Parking ({parkingSpots.length})
+                    Reset Filters
                   </button>
                 </div>
-              </div>
-
-              <div className="preview-spots-list">
-                {previewList.map((spot) => {
+              ) : (
+                filteredSpots.map((spot) => {
                   const isClosed = spot.is_active === false || spot.status === 'closed'
-                  const free = isClosed ? 0 : Math.max(0, spot.available_spaces ?? 0)
+                  const free = isClosed ? 0 : Math.max(0, Number(spot.available_spaces ?? 0))
+                  const isFastEv = Boolean(spot.ev_charging) && Number(spot.charger_power_kw || 0) >= 20
+                  const badgeClass = isClosed ? 'closed' : isFastEv ? 'ev-fast' : 'available'
+                  const badgeText = isClosed
+                    ? '● CLOSED'
+                    : spot.ev_charging
+                      ? `⚡ ${spot.charger_power_kw || 11} kW EV`
+                      : '● AVAILABLE'
+
                   return (
-                    <div
-                      key={spot.id}
-                      className="preview-spot-row"
-                      onClick={() => onOpenAuth('login')}
-                      role="button"
-                      tabIndex={0}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault()
-                          onOpenAuth('login')
-                        }
-                      }}
-                    >
-                      <img
-                        src={spot.image_url || `/images/spots/${spot.id}.jpg`}
-                        alt={spot.name}
-                        className="preview-spot-img"
-                        loading="lazy"
-                        onError={(e) => {
-                          e.currentTarget.onerror = null
-                          e.currentTarget.src = spot.ev_charging
-                            ? 'https://images.unsplash.com/photo-1751553822302-b8d5934a76b5?auto=format&fit=crop&w=300&h=200&q=80'
-                            : 'https://images.unsplash.com/photo-1619026457031-dafc4b5300a5?auto=format&fit=crop&w=300&h=200&q=80'
-                        }}
-                      />
-                      <div className="preview-spot-meta">
-                        <div className="preview-spot-title">{spot.name}</div>
-                        <div className="preview-spot-sub">{spot.address}</div>
-                        <div className="preview-spot-chips">
-                          {spot.ev_charging && spot.charger_power_kw && (
-                            <span className="preview-chip preview-chip-ev">
-                              {spot.charger_power_kw} kW
-                            </span>
-                          )}
-                          <span className={`preview-chip ${isClosed ? 'preview-chip-closed' : free > 0 ? 'preview-chip-ok' : 'preview-chip-full'}`}>
-                            {isClosed ? 'Closed' : free > 0 ? `${free} bays open` : 'Occupied'}
-                          </span>
+                    <article key={spot.id} className={`lp-spot-card ${isClosed ? 'is-closed' : ''}`}>
+                      <div className="lp-spot-media">
+                        <img
+                          src={spot.image_url || `/images/spots/${spot.id}.jpg`}
+                          alt={spot.name}
+                          loading="lazy"
+                          onError={(e) => {
+                            e.currentTarget.onerror = null
+                            e.currentTarget.src = spot.ev_charging
+                              ? 'https://images.unsplash.com/photo-1593941707882-a5bba14938c7?auto=format&fit=crop&w=700&q=80'
+                              : 'https://images.unsplash.com/photo-1506521781263-d8422e82f27a?auto=format&fit=crop&w=700&q=80'
+                          }}
+                        />
+                        <div className="lp-badge-row">
+                          <span className={`lp-badge ${badgeClass}`}>{badgeText}</span>
+                          <span className="lp-badge dist">{spot._dist.toFixed(1)} km</span>
                         </div>
                       </div>
-                      <div className="preview-spot-price">
-                        <strong>₹{Number(spot.price_per_hour).toFixed(0)}</strong>
-                        <span>{spot.ev_charging ? '/kWh' : '/hr'}</span>
+
+                      <div className="lp-spot-body">
+                        <h3 className="lp-spot-title">{spot.name}</h3>
+                        <p className="lp-spot-addr">{spot.address}</p>
+
+                        <div className="lp-spot-specs">
+                          <span>{isClosed ? 'Host paused' : `${free} / ${spot.capacity || 1} bays free`}</span>
+                          <span>&bull;</span>
+                          <span>
+                            {spot.ev_charging
+                              ? `${spot.charger_power_kw || 11} kW Charger`
+                              : (spot.vehicle_types || ['car', 'bike']).map((v) => v.toUpperCase()).join(' / ')}
+                          </span>
+                        </div>
+
+                        <div className="lp-spot-footer">
+                          <div>
+                            <span className="lp-price-num">
+                              &#8377;{spot.price_per_hour}
+                              <span className="lp-price-unit">/hr</span>
+                            </span>
+                            {spot.owner_name && spot.owner_name !== 'Demo Host' && (
+                              <span className="lp-host-sub">{spot.owner_name}</span>
+                            )}
+                          </div>
+
+                          <button
+                            type="button"
+                            className="lp-btn-reserve"
+                            disabled={isClosed || free === 0}
+                            onClick={() => openModal(spot)}
+                          >
+                            {isClosed ? 'Closed' : free === 0 ? 'Full' : 'Reserve Bay'}
+                          </button>
+                        </div>
                       </div>
-                    </div>
+                    </article>
                   )
-                })}
-              </div>
+                })
+              )}
+            </div>
+          </section>
 
-              <div className="preview-card-footer">
-                <span className="preview-footer-note">
-                  Select any spot above to reserve your time window
-                </span>
-              </div>
-            </div>
-          </div>
-        </section>
+          {/* Mandatory Tagline Reveal */}
+          <section id="tagline" className="lp-tagline-section landing-container" aria-label="Mission Statement">
+            <div className="lp-tagline-lead">// Zero Empty Miles</div>
+            <h2 className="lp-tagline-text" ref={taglineRef}>
+              {TAGLINE_WORDS.map((word, idx) => {
+                const lower = word.toLowerCase()
+                const isAccent = lower.includes('kilowatt') || lower.includes('guaranteed')
+                const isRevealed = idx <= revealedWords
+                return (
+                  <span
+                    key={`${word}-${idx}`}
+                    className={`lp-reveal-word ${isAccent ? 'accent' : ''} ${isRevealed ? 'revealed' : ''}`}
+                  >
+                    {word}
+                  </span>
+                )
+              })}
+            </h2>
+          </section>
 
-        {/* Project Proof / Key Metrics Strip */}
-        <section className="landing-stats-band landing-reveal">
-          <div className="landing-container landing-stats-grid">
-            <div className="landing-stat-box">
-              <span className="landing-stat-num">{parkingSpots.length || 8}</span>
-              <span className="landing-stat-label">Mysuru parking lots</span>
-            </div>
-            <div className="landing-stat-box">
-              <span className="landing-stat-num">{evSpots.length || 8}</span>
-              <span className="landing-stat-label">AC &amp; DC EV stations</span>
-            </div>
-            <div className="landing-stat-box">
-              <span className="landing-stat-num">{rateRange}</span>
-              <span className="landing-stat-label">Hourly parking &amp; EV rates</span>
-            </div>
-            <div className="landing-stat-box">
-              <span className="landing-stat-num">30m–24h</span>
-              <span className="landing-stat-label">Flexible booking windows</span>
-            </div>
-          </div>
-        </section>
-
-        {/* Features Grid */}
-        <section id="features" className="landing-section landing-reveal">
-          <div className="landing-container">
-            <div className="landing-section-head">
-              <span className="landing-section-kicker">Platform Capabilities</span>
-              <h2 className="landing-section-title">Everything vehicle owners and charger hosts need</h2>
-            </div>
-
-            <div className="landing-features-grid">
-              <article className="landing-feature-card">
-                <div className="feature-icon-box icon-blue">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <circle cx="12" cy="12" r="10" />
-                    <polyline points="12 6 12 12 16 14" />
-                  </svg>
+          {/* Host Hub */}
+          <section id="host-hub" className="lp-section landing-container" aria-labelledby="host-heading">
+            <div className="lp-host-showcase">
+              <div className="lp-host-header">
+                <div className="lp-host-intro">
+                  <span className="lp-tag">// Private &amp; Commercial Hosts</span>
+                  <h2 className="lp-section-heading" id="host-heading">
+                    Monetize idle bays. Power clean urban transit.
+                  </h2>
+                  <p className="lp-host-sub">
+                    Publish your EV charging station or driveway bay in minutes, monitor occupancy and earnings live, and pause bookings temporarily whenever you travel.
+                  </p>
                 </div>
-                <h3>Live Time Window Availability</h3>
-                <p>
-                  Reservations validate exact start and end intervals inside atomic database transactions so overlapping bookings never slip through.
-                </p>
-              </article>
 
-              <article className="landing-feature-card">
-                <div className="feature-icon-box icon-emerald">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-                  </svg>
-                </div>
-                <h3>Smart EV &amp; Parking Filters</h3>
-                <p>
-                  Narrow down stations by AC or DC charger type, Type 2 or CCS2 connector, minimum kW rating, vehicle size, distance, and hourly price.
-                </p>
-              </article>
-
-              <article className="landing-feature-card">
-                <div className="feature-icon-box icon-blue">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" />
-                    <line x1="8" y1="2" x2="8" y2="18" />
-                    <line x1="16" y1="6" x2="16" y2="22" />
-                  </svg>
-                </div>
-                <h3>Interactive Map &amp; GPS Routing</h3>
-                <p>
-                  Explore OpenStreetMap pins color coded by availability and EV readiness, then launch Google Maps turn by turn directions in one tap.
-                </p>
-              </article>
-
-              <article className="landing-feature-card">
-                <div className="feature-icon-box icon-emerald">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                    <polyline points="9 12 11 14 15 10" />
-                  </svg>
-                </div>
-                <h3>Instant Vouchers &amp; Easy Cancellation</h3>
-                <p>
-                  Receive a digital confirmation voucher right after booking, track active bays in My Bookings, and cancel anytime before arrival.
-                </p>
-              </article>
-            </div>
-          </div>
-        </section>
-
-        {/* Mandatory Word-by-Word Tagline Reveal */}
-        <TaglineRevealSection />
-
-        {/* How It Works (Drivers / Hosts Switcher) */}
-        <section id="how-it-works" className="landing-section landing-section-alt landing-reveal">
-          <div className="landing-container">
-            <div className="landing-section-head landing-section-head-wide">
-              <span className="landing-section-kicker">How SpotShare Works</span>
-              <h2 className="landing-section-title">Park, charge, or host in three simple steps</h2>
-              <div className="landing-role-switch" role="tablist" aria-label="Workflow role">
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={flowRole === 'driver'}
-                  className={`role-switch-btn ${flowRole === 'driver' ? 'active' : ''}`}
-                  onClick={() => setFlowRole('driver')}
-                >
-                  For Vehicle Owners
-                </button>
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={flowRole === 'host'}
-                  className={`role-switch-btn ${flowRole === 'host' ? 'active host' : ''}`}
-                  onClick={() => setFlowRole('host')}
-                >
-                  For Charger Hosts
+                <button type="button" className="btn-landing-login lp-host-cta" onClick={() => onOpenAuth('host')}>
+                  <span>Open Host Hub Login</span>
+                  <span>&rarr;</span>
                 </button>
               </div>
-            </div>
 
-            <div className="landing-steps-grid">
-              {(flowRole === 'driver' ? DRIVER_STEPS : HOST_STEPS).map((step) => (
-                <div key={step.num} className="landing-step-card">
-                  <span className={`step-num-pill ${flowRole === 'host' ? 'host' : ''}`}>{step.num}</span>
-                  <h3>{step.title}</h3>
-                  <p>{step.detail}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Host Hub Showcase */}
-        <section id="for-hosts" className="landing-section landing-reveal">
-          <div className="landing-container landing-host-wrap">
-            <div className="landing-section-head">
-              <span className="landing-section-kicker kicker-emerald">SpotShare Host Hub</span>
-              <h2 className="landing-section-title">
-                Built for private charger owners and commercial lots
-              </h2>
-              <p className="landing-section-sub">
-                Publish your EV charging station with GPS detection, monitor bookings and revenue in real time, and pause availability whenever you travel without deleting your station.
-              </p>
-            </div>
-
-            <div className="landing-host-card">
-              <ul className="landing-host-list">
-                <li>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                  <span>One click Turn Off / Close keeps your listing and history safe while away</span>
+              <ul className="lp-host-features-grid">
+                <li className="lp-host-feature-card">
+                  <div className="lp-feature-icon" aria-hidden="true">✓</div>
+                  <h3>Temporary Turn Off / Close Mode</h3>
+                  <p>
+                    Pause new bookings while preserving your listing details, rating, and booking history.
+                  </p>
                 </li>
-                <li>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                  <span>Monitor active bookings, booked value, and available bays from one dashboard</span>
+                <li className="lp-host-feature-card">
+                  <div className="lp-feature-icon" aria-hidden="true">✓</div>
+                  <h3>Atomic Anti-Clash Reservations</h3>
+                  <p>
+                    Database transaction locks prevent overlapping double-bookings during concurrent requests.
+                  </p>
+                </li>
+                <li className="lp-host-feature-card">
+                  <div className="lp-feature-icon" aria-hidden="true">✓</div>
+                  <h3>Direct Host Dashboard &amp; Analytics</h3>
+                  <p>
+                    View booked revenue, active sessions, and live bay utilization in one place.
+                  </p>
                 </li>
               </ul>
-
-              <div className="landing-host-cta-row">
-                <button
-                  type="button"
-                  className="btn-landing-host-cta"
-                  onClick={() => onOpenAuth('host')}
-                >
-                  <span>Open Host Login</span>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <line x1="5" y1="12" x2="19" y2="12" />
-                    <polyline points="12 5 19 12 12 19" />
-                  </svg>
-                </button>
-              </div>
             </div>
-          </div>
-        </section>
+          </section>
 
-        {/* FAQ Section */}
-        <section id="faq" className="landing-section landing-section-alt landing-reveal">
-          <div className="landing-container landing-faq-wrap">
-            <div className="landing-section-head">
-              <h2 className="landing-section-title">Frequently asked questions</h2>
-            </div>
-
-            <div className="landing-faq-list">
+          {/* FAQ */}
+          <section id="faq" className="lp-section landing-container" aria-labelledby="faq-heading">
+            <div className="lp-faq-wrap">
+              <h3 id="faq-heading" style={{ fontSize: '1.55rem', fontWeight: 700, marginBottom: '20px', textAlign: 'center' }}>
+                Frequently Asked Questions
+              </h3>
               {FAQS.map((item, idx) => {
                 const isOpen = openFaqIdx === idx
                 return (
-                  <div key={item.q} className={`landing-faq-item ${isOpen ? 'open' : ''}`}>
+                  <div key={item.q} className="lp-faq-item">
                     <button
                       type="button"
-                      className="landing-faq-trigger"
+                      className="lp-faq-trigger"
                       aria-expanded={isOpen}
                       onClick={() => setOpenFaqIdx(isOpen ? -1 : idx)}
                     >
                       <span>{item.q}</span>
-                      <svg
-                        width="18"
-                        height="18"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2.2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="faq-chevron"
-                        aria-hidden="true"
-                      >
-                        <polyline points="6 9 12 15 18 9" />
-                      </svg>
+                      <span>{isOpen ? '▴' : '▾'}</span>
                     </button>
-                    {isOpen && <p className="landing-faq-answer">{item.a}</p>}
+                    {isOpen && <p className="lp-faq-answer">{item.a}</p>}
                   </div>
                 )
               })}
             </div>
-          </div>
-        </section>
-      </main>
+          </section>
 
-      {/* Footer */}
-      <footer className="landing-footer">
-        <div className="landing-container landing-footer-inner">
-          <div className="landing-footer-brand">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <SpotShareLogo size={28} category="parking" />
-              <span className="landing-brand-text" style={{ fontSize: '1.05rem' }}>
-                <span className="brand-text-spot">Spot</span>
-                <span className="brand-text-share">Share</span>
-              </span>
+          {/* Final CTA */}
+          <section className="lp-final-cta landing-container" aria-label="Call to action">
+            <div className="lp-final-cta-box">
+              <span className="lp-tag" style={{ color: '#ffffff' }}>// Start In Seconds</span>
+              <h2 className="lp-hero-title" style={{ fontSize: 'clamp(1.9rem, 4.2vw, 3.2rem)', marginBottom: '12px' }}>
+                Reserve your bay or start hosting today.
+              </h2>
+              <p style={{ color: '#cbd5e1', maxWidth: '620px', margin: '0 auto', fontSize: '1.02rem' }}>
+                Open the full interactive Leaflet map marketplace or manage your EV chargers in the Host Hub.
+              </p>
+
+              <div className="lp-cta-row">
+                <button type="button" className="lp-btn-cta-primary" onClick={() => onOpenAuth('login')}>
+                  <span>Open Customer Marketplace</span>
+                  <span>&rarr;</span>
+                </button>
+                <button type="button" className="lp-btn-cta-secondary" onClick={() => onOpenAuth('host')}>
+                  Open Host Hub Login
+                </button>
+              </div>
             </div>
-            <p className="landing-footer-note">
-              Find, compare, and reserve verified parking bays and EV chargers across Mysuru.
-            </p>
-          </div>
+          </section>
+        </main>
 
-          <div className="landing-footer-meta">
-            <span className="landing-footer-pill">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z" />
-                <circle cx="12" cy="10" r="3" />
-              </svg>
-              <span>Mysuru, Karnataka</span>
-            </span>
+        {/* Footer */}
+        <footer className="lp-footer">
+          <div className="landing-container">
+            <div className="lp-footer-grid">
+              <div>
+                <div className="landing-brand" style={{ marginBottom: '10px' }}>
+                  <SpotShareLogo size={28} category={appMode} />
+                  <span className="landing-brand-text">
+                    <span className="brand-text-spot">Spot</span>
+                    <span className="brand-text-share">Share</span>
+                  </span>
+                </div>
+                <p style={{ fontSize: '0.84rem', lineHeight: 1.6, maxWidth: '320px' }}>
+                  Verified parking bays and EV charging stations across Mysuru, ready to reserve before you drive.
+                </p>
+              </div>
+
+              <div>
+                <h4>Portals</h4>
+                <ul className="lp-footer-links">
+                  <li><button type="button" onClick={() => onOpenAuth('login')}>Customer Marketplace</button></li>
+                  <li><button type="button" onClick={() => onOpenAuth('host')}>Host Hub Login</button></li>
+                </ul>
+              </div>
+
+              <div>
+                <h4>Explore</h4>
+                <ul className="lp-footer-links">
+                  <li><button type="button" onClick={() => scrollTo('network')}>Live Stations</button></li>
+                  <li><button type="button" onClick={() => scrollTo('host-hub')}>Host Hub</button></li>
+                </ul>
+              </div>
+
+              <div>
+                <h4>Coverage</h4>
+                <ul className="lp-footer-links">
+                  <li><span>Mysuru, Karnataka</span></li>
+                  <li><span>Parking &amp; EV Charging</span></li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="lp-footer-bottom">
+              <span>&copy; 2026 SpotShare Network. Mysuru, Karnataka.</span>
+              <button
+                type="button"
+                style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontFamily: 'inherit' }}
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              >
+                Back to top &uarr;
+              </button>
+            </div>
+          </div>
+        </footer>
+      </div>
+
+      {/* Live Reservation Modal */}
+      {bookingSpot && (
+        <div
+          className="lp-modal-backdrop"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="lp-modal-title"
+          onClick={() => setBookingSpot(null)}
+        >
+          <div className="lp-modal-dialog" onClick={(e) => e.stopPropagation()}>
             <button
               type="button"
-              className="landing-footer-top-btn"
-              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              className="lp-modal-close"
+              aria-label="Close modal"
+              onClick={() => setBookingSpot(null)}
             >
-              <span>Back to top</span>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <line x1="12" y1="19" x2="12" y2="5" />
-                <polyline points="5 12 12 5 19 12" />
-              </svg>
+              &times;
             </button>
+            <span className="lp-tag" style={{ color: 'var(--lp-emerald-glow)' }}>// Instant Reservation</span>
+            <h3 id="lp-modal-title" style={{ color: '#ffffff', fontSize: '1.3rem', marginBottom: '4px' }}>
+              {bookingSpot.name}
+            </h3>
+            <p style={{ color: 'var(--lp-text-secondary)', fontSize: '0.84rem', marginBottom: '16px' }}>
+              {bookingSpot.address}
+            </p>
+
+            <div style={{ background: 'rgba(0,0,0,0.45)', padding: '12px 14px', borderRadius: '10px', marginBottom: '14px', fontSize: '0.84rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                <span style={{ color: 'var(--lp-text-muted)' }}>Hourly Rate:</span>
+                <strong>&#8377;{bookingSpot.price_per_hour} / hr</strong>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'var(--lp-text-muted)' }}>Availability:</span>
+                <span style={{ color: 'var(--lp-emerald-glow)' }}>
+                  {bookingSpot.available_spaces ?? bookingSpot.capacity} of {bookingSpot.capacity} bays open
+                </span>
+              </div>
+            </div>
+
+            <form onSubmit={submitBooking}>
+              <div className="lp-modal-grid">
+                <div>
+                  <label className="lp-field-label" htmlFor="lp-bk-name">Driver Name</label>
+                  <input
+                    id="lp-bk-name"
+                    type="text"
+                    className="lp-modal-input"
+                    value={driverName}
+                    onChange={(e) => setDriverName(e.target.value)}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="lp-field-label" htmlFor="lp-bk-email">Email (Optional Receipt)</label>
+                  <input
+                    id="lp-bk-email"
+                    type="email"
+                    className="lp-modal-input"
+                    placeholder="driver@example.com"
+                    value={driverEmail}
+                    onChange={(e) => setDriverEmail(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="lp-modal-grid">
+                <div>
+                  <label className="lp-field-label" htmlFor="lp-bk-veh">Vehicle</label>
+                  <select
+                    id="lp-bk-veh"
+                    className="lp-modal-input"
+                    value={bookingVehicle}
+                    onChange={(e) => setBookingVehicle(e.target.value)}
+                  >
+                    {(bookingSpot.vehicle_types || ['car']).map((v) => (
+                      <option key={v} value={v}>
+                        {v.charAt(0).toUpperCase() + v.slice(1)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="lp-field-label" htmlFor="lp-bk-hrs">Duration</label>
+                  <select
+                    id="lp-bk-hrs"
+                    className="lp-modal-input"
+                    value={bookingHours}
+                    onChange={(e) => setBookingHours(Number(e.target.value))}
+                  >
+                    <option value={1}>1 Hour</option>
+                    <option value={2}>2 Hours</option>
+                    <option value={3}>3 Hours</option>
+                    <option value={5}>5 Hours</option>
+                  </select>
+                </div>
+              </div>
+
+              {bookingFeedback && (
+                <div className={`lp-modal-feedback ${bookingFeedback.kind}`}>
+                  {bookingFeedback.kind === 'success' ? (
+                    <>
+                      <strong>Booking Confirmed in SQLite!</strong>
+                      <br />
+                      Voucher ID: <code>{bookingFeedback.bookingId}</code> &bull; Total:{' '}
+                      <strong>&#8377;{bookingFeedback.totalPrice}</strong>
+                    </>
+                  ) : (
+                    <span>Booking failed: {bookingFeedback.message}</span>
+                  )}
+                </div>
+              )}
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px', paddingTop: '14px', borderTop: '1px solid var(--lp-border)' }}>
+                <div>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--lp-text-muted)' }}>Estimated Total</span>
+                  <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '1.4rem', fontWeight: 800 }}>
+                    &#8377;{(Number(bookingSpot.price_per_hour || 0) * bookingHours).toFixed(2).replace(/\.00$/, '')}
+                  </div>
+                </div>
+                <button type="submit" className="lp-btn-reserve" disabled={bookingBusy}>
+                  {bookingBusy ? 'Reserving...' : 'Confirm Reservation'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
-      </footer>
+      )}
     </div>
   )
 }
-
