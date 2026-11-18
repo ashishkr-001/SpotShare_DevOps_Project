@@ -67,12 +67,21 @@ function ErrorBox({ message, onRetry }) {
 }
 
 const HOST_USERS_KEY = 'spotshare_registered_hosts'
-const DEMO_HOST_PURGE_KEY = 'spotshare_demo_hosts_purged_v1'
+const DEMO_HOST_PURGE_KEY = 'spotshare_demo_hosts_purged_v2'
 
 function isSeededDemoHost(h) {
   const email = String(h?.email || '').trim().toLowerCase()
   const name = String(h?.name || '').trim().toLowerCase()
-  if (email === 'demohost@gmail.com' || name === 'demo host') return true
+  if (
+    email === 'demohost@gmail.com' ||
+    email === 'priya@example.com' ||
+    email === 'rahul@example.com' ||
+    email === 'aryan@example.com' ||
+    email === 'aryan@gmail.com' ||
+    name === 'demo host'
+  ) {
+    return true
+  }
   if (email === 'ashish@gmail.com' && (h?.password === 'password123' || h?.password === 'google_oauth')) return true
   return false
 }

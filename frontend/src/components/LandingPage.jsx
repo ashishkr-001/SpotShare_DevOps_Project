@@ -541,7 +541,6 @@ export default function LandingPage({ spots = [], onOpenAuth, isLeaving = false 
           <section id="network" className="lp-section landing-container" aria-labelledby="spots-heading">
             <div className="lp-section-header">
               <div>
-                <span className="lp-tag">// Live Station Explorer</span>
                 <h2 className="lp-section-heading" id="spots-heading">Explore live stations near you.</h2>
               </div>
 
@@ -666,7 +665,6 @@ export default function LandingPage({ spots = [], onOpenAuth, isLeaving = false 
 
           {/* Mandatory Tagline Reveal */}
           <section id="tagline" className="lp-tagline-section landing-container" aria-label="Mission Statement">
-            <div className="lp-tagline-lead">// Zero Empty Miles</div>
             <h2 className="lp-tagline-text" ref={taglineRef}>
               {TAGLINE_WORDS.map((word, idx) => {
                 const lower = word.toLowerCase()
@@ -689,7 +687,6 @@ export default function LandingPage({ spots = [], onOpenAuth, isLeaving = false 
             <div className="lp-host-showcase">
               <div className="lp-host-header">
                 <div className="lp-host-intro">
-                  <span className="lp-tag">// Private &amp; Commercial Hosts</span>
                   <h2 className="lp-section-heading" id="host-heading">
                     Monetize idle bays. Power clean urban transit.
                   </h2>
@@ -759,7 +756,6 @@ export default function LandingPage({ spots = [], onOpenAuth, isLeaving = false 
           {/* Final CTA */}
           <section className="lp-final-cta landing-container" aria-label="Call to action">
             <div className="lp-final-cta-box">
-              <span className="lp-tag" style={{ color: '#ffffff' }}>// Start In Seconds</span>
               <h2 className="lp-hero-title" style={{ fontSize: 'clamp(1.9rem, 4.2vw, 3.2rem)', marginBottom: '12px' }}>
                 Reserve your bay or start hosting today.
               </h2>

@@ -317,8 +317,14 @@ const FALLBACK_SPOTS = [
   },
 ]
 
-const DEMO_CUSTOMER_EMAILS = new Set(['ashish@example.com', 'aryan@example.com'])
-const DEMO_USER_PURGE_KEY = 'spotshare_demo_users_purged_v1'
+const DEMO_CUSTOMER_EMAILS = new Set([
+  'ashish@example.com',
+  'aryan@example.com',
+  'aryan@gmail.com',
+  'priya@example.com',
+  'rahul@example.com',
+])
+const DEMO_USER_PURGE_KEY = 'spotshare_demo_users_purged_v2'
 
 function getStoredUsers() {
   try {
@@ -1002,6 +1008,8 @@ function AuthScreen({ onLogin, initialTab = 'login', onBackToHome = null, isExit
             </p>
           </form>
         )}
+      </div>
+      </div>
 
         {/* Google Account Selector Modal */}
         {googleModalOpen && (
@@ -1100,8 +1108,6 @@ function AuthScreen({ onLogin, initialTab = 'login', onBackToHome = null, isExit
             </div>
           </div>
         )}
-      </div>
-      </div>
     </div>
   )
 }
