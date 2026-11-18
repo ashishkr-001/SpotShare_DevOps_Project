@@ -2,56 +2,61 @@
 # Any pull request touching these files will automatically request review from the owner.
 
 # Member 1: Backend API, Models & Auth/OTP Mailer
-/backend/main.py                        @member1-username
-/backend/models.py                      @member1-username
-/backend/mailer.py                      @member1-username
-/backend/.env.example                   @member1-username
-/backend/requirements.txt               @member1-username
+/backend/main.py                        @aryan-tengale
+/backend/models.py                      @aryan-tengale
+/backend/mailer.py                      @aryan-tengale
+/backend/.env.example                   @aryan-tengale
+/backend/requirements.txt               @aryan-tengale
 
 # Member 2: Data Architecture, Concurrency, Seeding & Recommendations
-/backend/database.py                    @member2-username
-/backend/recommendations.py             @member2-username
+/backend/database.py                    @aryanrajcodes
+/backend/recommendations.py             @aryanrajcodes
 
 # Member 3: Customer Marketplace UI, Interactive Map & Showcase
-/frontend/index.html                    @member3-username
-/frontend/showcase.html                 @member3-username
-/frontend/package.json                  @member3-username
-/frontend/package-lock.json             @member3-username
-/frontend/vite.config.js                @member3-username
-/frontend/.env.example                  @member3-username
-/frontend/.gitignore                    @member3-username
-/frontend/src/main.jsx                  @member3-username
-/frontend/src/App.jsx                   @member3-username
-/frontend/src/styles.css                @member3-username
-/frontend/src/components/BookingModal.jsx   @member3-username
-/frontend/src/components/FilterBar.jsx      @member3-username
-/frontend/src/components/LandingPage.jsx    @member3-username
-/frontend/src/components/LandingPage.css    @member3-username
-/frontend/src/components/ParkingMap.jsx     @member3-username
-/frontend/src/components/SpotCard.jsx       @member3-username
-/frontend/src/components/SpotShareLogo.jsx  @member3-username
-/frontend/public/                       @member3-username
+/frontend/index.html                    @ashishkr-001
+/frontend/showcase.html                 @ashishkr-001
+/frontend/package.json                  @ashishkr-001
+/frontend/package-lock.json             @ashishkr-001
+/frontend/vite.config.js                @ashishkr-001
+/frontend/.env.example                  @ashishkr-001
+/frontend/.gitignore                    @ashishkr-001
+/frontend/src/main.jsx                  @ashishkr-001
+/frontend/src/App.jsx                   @ashishkr-001
+/frontend/src/styles.css                @ashishkr-001
+/frontend/src/components/BookingModal.jsx   @ashishkr-001
+/frontend/src/components/FilterBar.jsx      @ashishkr-001
+/frontend/src/components/LandingPage.jsx    @ashishkr-001
+/frontend/src/components/LandingPage.css    @ashishkr-001
+/frontend/src/components/ParkingMap.jsx     @ashishkr-001
+/frontend/src/components/ShaderBackdrop.jsx @ashishkr-001
+/frontend/src/components/SpotCard.jsx       @ashishkr-001
+/frontend/src/components/SpotShareLogo.jsx  @ashishkr-001
+/frontend/public/                       @ashishkr-001
 
 # Member 4: Host Hub, Station Controls & Insights
-/frontend/host.html                     @member4-username
-/frontend/src/host-main.jsx             @member4-username
-/frontend/src/HostApp.jsx               @member4-username
-/frontend/src/HostApp.css               @member4-username
-/frontend/src/AddChargerForm.jsx        @member4-username
-/frontend/src/api.js                    @member4-username
-/frontend/src/components/AuthTopBar.jsx     @member4-username
-/frontend/src/components/PasswordInput.jsx  @member4-username
-/frontend/src/components/SmartInsights.jsx  @member4-username
+/frontend/host.html                     @arvetivijvalarya
+/frontend/src/host-main.jsx             @arvetivijvalarya
+/frontend/src/HostApp.jsx               @arvetivijvalarya
+/frontend/src/HostApp.css               @arvetivijvalarya
+/frontend/src/AddChargerForm.jsx        @arvetivijvalarya
+/frontend/src/api.js                    @arvetivijvalarya
+/frontend/src/components/AuthTopBar.jsx     @arvetivijvalarya
+/frontend/src/components/PasswordInput.jsx  @arvetivijvalarya
+/frontend/src/components/SmartInsights.jsx  @arvetivijvalarya
 
 # Member 5: DevOps, Containers, CI/CD Pipelines, Testing & Docs
-/backend/test_backend.py                @member5-username
-/backend/Dockerfile                     @member5-username
-/frontend/Dockerfile                    @member5-username
-/docker-compose.yml                     @member5-username
-/.dockerignore                          @member5-username
-/.github/                               @member5-username
-/.gitignore                             @member5-username
-/package.json                           @member5-username
-/README.md                              @member5-username
-/run.bat                                @member5-username
-/run.sh                                 @member5-username
+/backend/test_backend.py                @singhanurag0735-gif
+/backend/Dockerfile                     @singhanurag0735-gif
+/backend/.dockerignore                  @singhanurag0735-gif
+/frontend/Dockerfile                    @singhanurag0735-gif
+/frontend/.dockerignore                 @singhanurag0735-gif
+/frontend/nginx.conf                    @singhanurag0735-gif
+/frontend/vercel.json                   @singhanurag0735-gif
+/docker-compose.yml                     @singhanurag0735-gif
+/.dockerignore                          @singhanurag0735-gif
+/.github/                               @singhanurag0735-gif
+/.gitignore                             @singhanurag0735-gif
+/package.json                           @singhanurag0735-gif
+/README.md                              @singhanurag0735-gif
+/run.bat                                @singhanurag0735-gif
+/run.sh                                 @singhanurag0735-gif

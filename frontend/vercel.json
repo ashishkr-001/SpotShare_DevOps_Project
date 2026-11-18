@@ -1,0 +1,10 @@
+{
+  "rewrites": [
+    { "source": "/parking", "destination": "/index.html" },
+    { "source": "/ev-charging", "destination": "/index.html" },
+    { "source": "/bookings", "destination": "/index.html" },
+    { "source": "/favorites", "destination": "/index.html" },
+    { "source": "/profile", "destination": "/index.html" },
+    { "source": "/login", "destination": "/index.html" }
+  ]
+}

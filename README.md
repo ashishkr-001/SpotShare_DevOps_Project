@@ -39,19 +39,20 @@
 
 ## Overview
 
-SpotShare connects **EV drivers and commuters** with **parking lots and private/commercial EV charger hosts**. Built around Mysuru demo coordinates (`12.2958, 76.6394`) with 16 pre-seeded locations, the platform supports:-
+SpotShare connects **EV drivers and commuters** with **parking lots and private/commercial EV charger hosts**. Built around Mysuru coordinates (`12.2958, 76.6394`) with 16 pre-seeded locations, the platform supports:
 
 - **Live slot availability** calculated per `[start, end)` time window against active reservations.
-- **Interactive map and list views** with zero paid map API keys (OpenStreetMap + Leaflet).
+- **Interactive WebGL landing experience & map views** with OpenStreetMap + Leaflet (zero paid map API keys).
 - **Host operational controls** to publish chargers, track earnings, or temporarily **Turn Off / Close** a station when out of town without losing listing data or booking history.
-- **Real Gmail SMTP verification codes** for password resets.
+- **Real Gmail SMTP emails** for booking confirmations and 6-digit password reset codes.
 
 ---
 
 ## Features
 
-### Customer Marketplace
-- **Dedicated Parking & EV Modes:** Switch seamlessly between **Parking** (blue theme) and **EV Charging** (emerald theme) with category-specific filters.
+### Landing Showcase & Customer Marketplace
+- **Interactive WebGL Landing Page (`LandingPage.jsx`):** Features a custom GLSL dithered fluid backdrop (`ShaderBackdrop.jsx`) that morphs between **Parking** (sapphire blue) and **EV Charging** (emerald), live network telemetry (**Available Bays Now**, **Active Charger Capacity**, **Mysuru Hubs Online**, **Lowest Open Rate**), station filtering, Host Hub overview, and FAQ accordion. Clicking **Reserve Bay** routes guests to Customer Login before booking.
+- **Dedicated Parking & EV Modes:** Switch seamlessly between **Parking** (blue theme) and **EV Charging** (emerald theme) with category-specific filters inside the marketplace.
 - **Multi-Criteria Filtering & Sorting:**
   - Search by station name, area, or landmark.
   - Filter by **Distance** (Haversine km from Mysuru default or live browser GPS), **Price**, **Vehicle Type** (`car`, `bike`, `van`, `covered`), **Charger Type** (`AC` / `DC`), **Connector** (`Type 2`, `CCS2`, `CHAdeMO`), **Charging Power** (kW), **Owner Type** (`Public` / `Private Owners`), and **Available Now**.
@@ -66,7 +67,7 @@ SpotShare connects **EV drivers and commuters** with **parking lots and private/
 - **Favorites & Profile:** Save favorite spots and view account details in the sidebar navigation.
 
 ### Host Hub
-- **Host Dashboard (`host.html` or `Host / Owner` tab):**
+- **Host Dashboard (`host.html` or `Host Hub Login` button):**
   - Top metric cards for **Active Chargers** (plus closed count), **Active Bookings**, **Booked Value** (`₹`), and **Available Bays**.
 - **Publish New Chargers:** Add a station with name, address, GPS coordinates (**Auto-detect My Location** or manual), hourly rate (`₹/hr`), charger power (`kW`), bay capacity, supported vehicle types, and quick-pick amenities.
 - **Turn Off / Close & Turn On / Reopen Stations:**
@@ -75,9 +76,9 @@ SpotShare connects **EV drivers and commuters** with **parking lots and private/
 - **Permanent Removal:** **Remove Charger** deletes a station and its bookings after confirmation.
 
 ### Authentication & Password Recovery
-- **Unified Auth Experience:** Customer login/registration card (`Customer Login` and `Host / Owner` tabs) with inline **Register an account** / **Sign in here** toggles, **Confirm Password** validation, and **Continue with Google** account picker.
+- **Dark Obsidian Glass Auth Experience:** Customer Login (`App.jsx`) and Host Hub Login (`HostApp.jsx`) share the live WebGL shader backdrop with matching **AuthTopBar** switching, inline **Register an account** / **Sign in here** toggles, **Confirm Password** validation, and **Continue with Google** account selection.
 - **Focus-Safe Password Toggle:** Custom [`PasswordInput`](frontend/src/components/PasswordInput.jsx) component hides browser-native reveal icons (such as Edge `::-ms-reveal`) and preserves typing cursor focus without stealing Spacebar or Tab navigation.
-- **Gmail SMTP Password Reset:** **Forgot password?** sends a 6-digit verification code to the user's registered email via TLS SMTP, backed by server-side SHA-256 OTP hashing, 10-minute expiration, single-use validation, and a 5-attempt lockout.
+- **Gmail SMTP Password Reset & Booking Emails:** **Forgot password?** sends a 6-digit verification code to the user's registered email via TLS SMTP, backed by server-side SHA-256 OTP hashing, 10-minute expiration, single-use validation, and a 5-attempt lockout; confirmed bookings also send summary receipt emails when an email address is provided.
 
 ---
 
@@ -108,41 +109,55 @@ flowchart LR
 ## Project Structure
 
 ```text
-CDD/
+SpotShare_DevOps_Project/
+├── .github/
+│   ├── CODEOWNERS             # Automated PR review ownership across all 5 members
+│   └── workflows/             # ci-cd.yml, docker-ci.yml, pr-checks.yml
 ├── backend/
 │   ├── main.py                # FastAPI routes, CORS middleware, unified JSON error handlers
 │   ├── database.py            # SQLite schema, migrations, demo seeding, concurrency & OTP logic
 │   ├── models.py              # Pydantic v2 request/response schemas & validators
 │   ├── mailer.py              # Dynamic .env reader & Gmail TLS/SSL SMTP sender
 │   ├── recommendations.py     # Multi-factor spot ranking & host analytics
-│   ├── test_backend.py        # pytest unit & integration test suite (9 tests)
+│   ├── test_backend.py        # pytest unit & integration test suite (10 tests)
 │   ├── requirements.txt       # Python dependencies
+│   ├── Dockerfile             # Production Python 3.11 FastAPI container image
+│   ├── .dockerignore          # Excludes .env, *.db, caches from Docker build context
 │   ├── .env.example           # SMTP configuration template
-│   └── spotshare.db           # SQLite database (auto-created on first run)
+│   └── spotshare.db           # SQLite database (auto-created on first run, gitignored)
 ├── frontend/
-│   ├── index.html             # Customer marketplace HTML entry
+│   ├── index.html             # Landing page & Customer marketplace HTML entry
 │   ├── host.html              # Standalone Host Hub HTML entry
+│   ├── showcase.html          # Standalone WebGL Showcase page
 │   ├── vite.config.js         # Multi-page Vite build configuration
 │   ├── package.json           # Frontend scripts & npm dependencies
+│   ├── Dockerfile             # Multi-stage Node 20 -> Nginx Alpine container image
+│   ├── .dockerignore          # Excludes node_modules, dist, .env from Docker context
 │   ├── .env.example           # Frontend environment template
 │   ├── public/images/spots/   # Local parking & EV spot photographs
 │   └── src/
 │       ├── main.jsx           # Customer React root
 │       ├── host-main.jsx      # Host React root
-│       ├── App.jsx            # Customer auth, explore, map, bookings, favorites, profile
+│       ├── App.jsx            # Customer landing/auth shell, explore, map, bookings, favorites, profile
 │       ├── HostApp.jsx        # Host auth, metrics, charger management, live bookings
 │       ├── AddChargerForm.jsx # New EV charger creation form with GPS & validation
 │       ├── api.js             # Host fetch client & field-level ApiError parser
-│       ├── styles.css         # Customer & shared UI styles
-│       ├── HostApp.css        # Host dashboard styles
+│       ├── styles.css         # Customer & shared auth/UI styles
+│       ├── HostApp.css        # Host gate & dashboard styles
 │       └── components/
+│           ├── AuthTopBar.jsx     # Shared top bar switching Customer Login / Host Hub / Home
 │           ├── BookingModal.jsx   # Time-window booking form & digital receipt
 │           ├── FilterBar.jsx      # Category-aware search, filters & sorting controls
+│           ├── LandingPage.jsx    # Interactive WebGL landing page & station explorer
+│           ├── LandingPage.css    # Landing page styling
 │           ├── ParkingMap.jsx     # Leaflet + OpenStreetMap view with interactive drawer
 │           ├── PasswordInput.jsx  # Custom show/hide password input
+│           ├── ShaderBackdrop.jsx # Reusable GLSL fluid WebGL backdrop
 │           ├── SpotCard.jsx       # Spot summary card with availability & directions
 │           ├── SpotShareLogo.jsx  # Brand logo SVG component
 │           └── SmartInsights.jsx  # Insights panel component stub
+├── docker-compose.yml         # Multi-container orchestration with persistent SQLite volume
+├── .dockerignore              # Root build context exclusions
 ├── package.json               # Workspace-level helper scripts
 ├── run.bat                    # Windows one-command launcher
 ├── run.sh                     # macOS / Linux one-command launcher
@@ -233,8 +248,9 @@ VITE_API_BASE_URL=http://localhost:8000
 
 | Surface | URL |
 |---|---|
-| **Customer Marketplace** | `http://localhost:5173` |
-| **Host Hub (Standalone)** | `http://localhost:5173/host.html` *(also via **Host / Owner** tab on login)* |
+| **Landing & Customer Marketplace** | `http://localhost:5173` |
+| **Host Hub (Standalone)** | `http://localhost:5173/host.html` *(or **Host Hub Login** button in header)* |
+| **Standalone Showcase** | `http://localhost:5173/showcase.html` |
 | **Backend API** | `http://localhost:8000` |
 | **Interactive API Docs (Swagger UI)** | `http://localhost:8000/docs` |
 
@@ -294,7 +310,7 @@ All errors return a uniform JSON shape:
 | Method | Endpoint | Description |
 |---|---|---|
 | `GET` | `/api/recommendations` | Ranked open spots matching user preferences (`limit` 1–20) |
-| `GET` | `/api/insights` | Live platform-wide parking/EV availability & booking stats |
+| `GET` | `/api/insights` | Live platform-wide summary (`total_spots`, `active_spots`, `available_spaces`) & booking stats |
 | `GET` | `/api/host/insights` | Per-host revenue, bay availability, occupancy %, and insights (`owner_name`) |
 | `GET` | `/api/health` | Backend service, database, and server time check |
 | `POST` | `/api/simulator/check-in` | Software-only simulated barrier check-in (`booking_id`) |
@@ -325,7 +341,7 @@ python -m pytest test_backend.py -v
 *(Or from project root on Unix/Git Bash: `npm run test:backend`)*
 
 ### Frontend Production Build
-Builds both `index.html` and `host.html` bundles into `frontend/dist/`:
+Builds `index.html`, `host.html`, and `showcase.html` bundles into `frontend/dist/`:
 ```bash
 cd frontend
 npm run build
@@ -357,22 +373,38 @@ npm run build
 2. **`docker-ci.yml` (`Docker Build & Container Health CI`)** — Validates `docker-compose.yml`, builds `backend/Dockerfile` & `frontend/Dockerfile`, and smoke-tests live running containers.
 3. **`pr-checks.yml` (`PR Quality & Security Hygiene Checks`)** — Verifies no `.env`, `*.db`, or `node_modules/` are tracked, runs `pip check`, `compileall`, and `npm audit`.
 
-### Run with Docker Compose
+### Run with Docker Compose or Pre-Built Docker Hub Images
+
+**Build & run locally with Docker Compose:**
 ```bash
-docker compose up --build
+docker compose up --build -d
 ```
 - **Frontend:** `http://localhost:5173`
 - **Backend API & Docs:** `http://localhost:8000/docs`
+
+**Pull pre-built images from Docker Hub (`ashishkr001`):**
+- Backend: [`ashishkr001/spotshare-backend`](https://hub.docker.com/r/ashishkr001/spotshare-backend) (`latest`, `1.1`)
+- Frontend: [`ashishkr001/spotshare-frontend`](https://hub.docker.com/r/ashishkr001/spotshare-frontend) (`latest`, `1.1`)
+
+```bash
+docker pull ashishkr001/spotshare-backend:latest
+docker pull ashishkr001/spotshare-frontend:latest
+docker volume create spotshare_sqlite_data
+docker run -d --name spotshare-backend -p 8000:8000 -v spotshare_sqlite_data:/app/data ashishkr001/spotshare-backend:latest
+docker run -d --name spotshare-frontend -p 80:80 ashishkr001/spotshare-frontend:latest
+```
 
 ---
 
 ## Team Collaboration & 5-Member Split
 
-| Member | Module Ownership | Feature Branch |
-|---|---|---|
-| **Member 1** | Backend API, Pydantic Models & SMTP Mailer (`main.py`, `models.py`, `mailer.py`) | `feat/api-auth-mailer` |
-| **Member 2** | SQLite Data Layer & Recommendation Engine (`database.py`, `recommendations.py`) | `feat/db-recommendations` |
-| **Member 3** | Customer Marketplace UI, Leaflet Map & Showcase (`App.jsx`, `ParkingMap.jsx`, `BookingModal.jsx`, `FilterBar.jsx`) | `feat/customer-marketplace` |
-| **Member 4** | Host Hub, Station Controls & Insights (`HostApp.jsx`, `AddChargerForm.jsx`, `SmartInsights.jsx`, `PasswordInput.jsx`) | `feat/host-hub-controls` |
-| **Member 5** | DevOps, Docker, CI/CD Pipelines, Pytest Suite & Docs (`.github/`, `Dockerfile`s, `test_backend.py`, `README.md`) | `ci/github-actions-pipeline` |
+See [.github/CODEOWNERS](.github/CODEOWNERS) for automated PR review routing across all 5 members:
+
+| Member | GitHub Username | Module Ownership | Feature Branch |
+|---|---|---|---|
+| **Member 1** | [`@aryan-tengale`](https://github.com/aryan-tengale) | Backend API, Pydantic Models & SMTP Mailer (`main.py`, `models.py`, `mailer.py`) | `feat/api-auth-mailer` |
+| **Member 2** | [`@aryanrajcodes`](https://github.com/aryanrajcodes) | SQLite Data Layer & Recommendation Engine (`database.py`, `recommendations.py`) | `feat/db-recommendations` |
+| **Member 3** | [`@ashishkr-001`](https://github.com/ashishkr-001) | Customer Marketplace UI, Landing Shader, Map & Showcase (`App.jsx`, `LandingPage.jsx`, `ParkingMap.jsx`, `BookingModal.jsx`, `FilterBar.jsx`) | `feat/customer-marketplace` |
+| **Member 4** | [`@arvetivijvalarya`](https://github.com/arvetivijvalarya) | Host Hub, Station Controls & Insights (`HostApp.jsx`, `AddChargerForm.jsx`, `AuthTopBar.jsx`, `SmartInsights.jsx`, `PasswordInput.jsx`) | `feat/host-hub-controls` |
+| **Member 5** | [`@singhanurag0735-gif`](https://github.com/singhanurag0735-gif) | DevOps, Docker, CI/CD Pipelines, Pytest Suite & Docs (`.github/`, `Dockerfile`s, `test_backend.py`, `README.md`) | `ci/github-actions-pipeline` |
 
