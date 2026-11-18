@@ -39,7 +39,7 @@
 
 ## Overview
 
-SpotShare connects **EV drivers and commuters** with **parking lots and private/commercial EV charger hosts**. Built around Mysuru demo coordinates (`12.2958, 76.6394`) with 16 pre-seeded locations, the platform supports:
+SpotShare connects **EV drivers and commuters** with **parking lots and private/commercial EV charger hosts**. Built around Mysuru demo coordinates (`12.2958, 76.6394`) with 16 pre-seeded locations, the platform supports:-
 
 - **Live slot availability** calculated per `[start, end)` time window against active reservations.
 - **Interactive map and list views** with zero paid map API keys (OpenStreetMap + Leaflet).
