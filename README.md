@@ -9,7 +9,9 @@
 [![CI/CD](https://github.com/ashishkr-001/SpotShare_DevOps_Project/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/ashishkr-001/SpotShare_DevOps_Project/actions/workflows/ci-cd.yml)
 [![Docker CI](https://github.com/ashishkr-001/SpotShare_DevOps_Project/actions/workflows/docker-ci.yml/badge.svg)](https://github.com/ashishkr-001/SpotShare_DevOps_Project/actions/workflows/docker-ci.yml)
 [![PR Hygiene](https://github.com/ashishkr-001/SpotShare_DevOps_Project/actions/workflows/pr-checks.yml/badge.svg)](https://github.com/ashishkr-001/SpotShare_DevOps_Project/actions/workflows/pr-checks.yml)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Railway-0B0D0E?style=flat-square&logo=railway&logoColor=white)](https://spotshare-frontend-production.up.railway.app)
 
+> **Live Deployment:** [https://spotshare-frontend-production.up.railway.app](https://spotshare-frontend-production.up.railway.app) · **API Docs:** [https://spotshare-backend-production.up.railway.app/docs](https://spotshare-backend-production.up.railway.app/docs)
 
 ---
 
@@ -34,6 +36,9 @@
 - [Database Management](#database-management)
 - [Testing & Production Build](#testing--production-build)
 - [Troubleshooting](#troubleshooting)
+- [DevOps, Docker & CI/CD Pipelines](#devops-docker--cicd-pipelines)
+  - [Live Cloud Deployment (Railway)](#live-cloud-deployment-railway)
+- [Team Collaboration & 5-Member Split](#team-collaboration--5-member-split)
 
 ---
 
@@ -131,7 +136,9 @@ SpotShare_DevOps_Project/
 │   ├── showcase.html          # Standalone WebGL Showcase page
 │   ├── vite.config.js         # Multi-page Vite build configuration
 │   ├── package.json           # Frontend scripts & npm dependencies
-│   ├── Dockerfile             # Multi-stage Node 20 -> Nginx Alpine container image
+│   ├── Dockerfile             # Multi-stage Node 20 -> Nginx Alpine image (accepts VITE_API_BASE_URL arg)
+│   ├── nginx.conf             # Nginx SPA fallback routing (/parking -> index.html)
+│   ├── vercel.json            # Optional Vercel SPA rewrite configuration
 │   ├── .dockerignore          # Excludes node_modules, dist, .env from Docker context
 │   ├── .env.example           # Frontend environment template
 │   ├── public/images/spots/   # Local parking & EV spot photographs
@@ -211,10 +218,11 @@ SpotShare uses one sender mailbox to deliver 6-digit password-reset codes to **a
 | `SPOTSHARE_ALLOW_PAST` | `0` | Set to `1` during tests to allow past booking timestamps |
 
 #### 3. Frontend (`frontend/.env`) — *Optional*
-Defaults to `http://localhost:8000`. Copy `frontend/.env.example` to `frontend/.env` to customize:
+Defaults to `http://<hostname>:8000` locally (`http://localhost:8000`). Copy `frontend/.env.example` to `frontend/.env` to customize:
 ```env
 VITE_API_BASE_URL=http://localhost:8000
 ```
+When building the frontend Docker image for cloud deployment, pass `--build-arg VITE_API_BASE_URL=<backend-https-url>` so Vite bundles the production backend endpoint directly.
 
 ### Running the App
 
@@ -246,13 +254,14 @@ VITE_API_BASE_URL=http://localhost:8000
 
 ## Application URLs
 
-| Surface | URL |
-|---|---|
-| **Landing & Customer Marketplace** | `http://localhost:5173` |
-| **Host Hub (Standalone)** | `http://localhost:5173/host.html` *(or **Host Hub Login** button in header)* |
-| **Standalone Showcase** | `http://localhost:5173/showcase.html` |
-| **Backend API** | `http://localhost:8000` |
-| **Interactive API Docs (Swagger UI)** | `http://localhost:8000/docs` |
+| Surface | Live Production (Railway) | Local Development |
+|---|---|---|
+| **Landing & Customer Marketplace** | [spotshare-frontend-production.up.railway.app](https://spotshare-frontend-production.up.railway.app) | `http://localhost:5173` |
+| **Parking Marketplace Route** | [spotshare-frontend-production.up.railway.app/parking](https://spotshare-frontend-production.up.railway.app/parking) | `http://localhost:5173/parking` |
+| **Host Hub (Standalone)** | [spotshare-frontend-production.up.railway.app/host.html](https://spotshare-frontend-production.up.railway.app/host.html) | `http://localhost:5173/host.html` *(or **Host Hub Login** button in header)* |
+| **Standalone Showcase** | [spotshare-frontend-production.up.railway.app/showcase.html](https://spotshare-frontend-production.up.railway.app/showcase.html) | `http://localhost:5173/showcase.html` |
+| **Backend API** | [spotshare-backend-production.up.railway.app](https://spotshare-backend-production.up.railway.app) | `http://localhost:8000` |
+| **API Docs (Swagger UI) & Health** | [`/docs`](https://spotshare-backend-production.up.railway.app/docs) · [`/api/health`](https://spotshare-backend-production.up.railway.app/api/health) | `http://localhost:8000/docs` · `/api/health` |
 
 ---
 
@@ -373,6 +382,17 @@ npm run build
 2. **`docker-ci.yml` (`Docker Build & Container Health CI`)** — Validates `docker-compose.yml`, builds `backend/Dockerfile` & `frontend/Dockerfile`, and smoke-tests live running containers.
 3. **`pr-checks.yml` (`PR Quality & Security Hygiene Checks`)** — Verifies no `.env`, `*.db`, or `node_modules/` are tracked, runs `pip check`, `compileall`, and `npm audit`.
 
+### Live Cloud Deployment (Railway)
+
+SpotShare is deployed live on **Railway** (`production` environment) as two container services:
+
+| Service | Public URL | Image & Port | Configuration |
+|---|---|---|---|
+| **`spotshare-backend`** | [spotshare-backend-production.up.railway.app](https://spotshare-backend-production.up.railway.app) | `ashishkr001/spotshare-backend:latest` (Port `8000`) | Persistent volume `spotshare-db-data` mounted at `/app/data` (`SPOTSHARE_DB_PATH=/app/data/spotshare.db`), `SPOTSHARE_CORS_ORIGINS=*`, healthcheck `/api/health` |
+| **`spotshare-frontend`** | [spotshare-frontend-production.up.railway.app](https://spotshare-frontend-production.up.railway.app) | `ashishkr001/spotshare-frontend:railway` (Nginx Port `80`) | Built with `--build-arg VITE_API_BASE_URL=https://spotshare-backend-production.up.railway.app`, healthcheck `/` |
+
+> **Optional Live Email Setup on Railway:** Local Gmail secrets (`backend/.env`) are excluded from Docker images and Git. To enable live OTP & booking confirmation emails in production, add `SPOTSHARE_SMTP_HOST`, `SPOTSHARE_SMTP_PORT`, `SPOTSHARE_SMTP_USER`, `SPOTSHARE_SMTP_PASSWORD`, and optionally `SPOTSHARE_SMTP_FROM` under **`spotshare-backend` → Variables** in the Railway Dashboard.
+
 ### Run with Docker Compose or Pre-Built Docker Hub Images
 
 **Build & run locally with Docker Compose:**
@@ -384,7 +404,7 @@ docker compose up --build -d
 
 **Pull pre-built images from Docker Hub (`ashishkr001`):**
 - Backend: [`ashishkr001/spotshare-backend`](https://hub.docker.com/r/ashishkr001/spotshare-backend) (`latest`, `1.1`)
-- Frontend: [`ashishkr001/spotshare-frontend`](https://hub.docker.com/r/ashishkr001/spotshare-frontend) (`latest`, `1.1`)
+- Frontend: [`ashishkr001/spotshare-frontend`](https://hub.docker.com/r/ashishkr001/spotshare-frontend) (`latest`, `1.2` for local `http://<host>:8000`; `railway` for the hosted Railway backend)
 
 ```bash
 docker pull ashishkr001/spotshare-backend:latest
