@@ -432,3 +432,5 @@ See [.github/CODEOWNERS](.github/CODEOWNERS) for automated PR review routing acr
 | **Member 4** | [`@arvetivijvalarya`](https://github.com/arvetivijvalarya) | Host Hub, Station Controls & Insights (`HostApp.jsx`, `AddChargerForm.jsx`, `AuthTopBar.jsx`, `SmartInsights.jsx`, `PasswordInput.jsx`) | `feat/host-hub-controls` |
 | **Member 5** | [`@singhanurag0735-gif`](https://github.com/singhanurag0735-gif) | DevOps, Docker, CI/CD Pipelines, Pytest Suite & Docs (`.github/`, `Dockerfile`s, `test_backend.py`, `README.md`) | `ci/github-actions-pipeline` |
 
+### Documentation Maintenance
+Project documentation updated.
