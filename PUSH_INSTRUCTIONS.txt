@@ -1,0 +1,38 @@
+Member 2 — SQLite Data Layer & Recommendation Engine
+====================================================================
+Assigned Branch: feat/db-recommendations
+Repository:      https://github.com/ashishkr-001/SpotShare_DevOps_Project.git
+
+Included Files (2):
+  - backend/database.py
+  - backend/recommendations.py
+
+How to Push Your Work on Your Own Branch & Open a Pull Request:
+--------------------------------------------------------------------
+1. Make sure you accepted the GitHub Collaborator invite for the repo.
+
+2. Set your local Git author to match your GitHub account email
+   (required so GitHub credits your commits in Insights -> Contributors):
+     git config user.name "Your Name"
+     git config user.email "your-github-email@example.com"
+
+3. Clone the repo and switch to your feature branch:
+     git clone https://github.com/ashishkr-001/SpotShare_DevOps_Project.git
+     cd SpotShare_DevOps_Project
+     git checkout -b feat/db-recommendations
+
+4. Copy your folder's files (backend/, frontend/, etc.) into the cloned
+   repo whenever you make edits or additions, then stage, commit & push:
+     git status
+     git add .
+     git commit -m "feat(member-2-database-engine): update module"
+     git push -u origin feat/db-recommendations
+
+   Note: Pushing to `feat/db-recommendations` automatically triggers GitHub
+   Actions CI/CD (`SpotShare CI/CD Pipeline` and `Docker Build CI`).
+
+5. Open a Pull Request on GitHub:
+   - Base branch: `main`  <-  Compare branch: `feat/db-recommendations`
+   - Wait for all CI/CD checks to turn GREEN.
+   - Ask a teammate to review/approve, then merge using
+     "Create a merge commit" (keeps every author's commit visible).
