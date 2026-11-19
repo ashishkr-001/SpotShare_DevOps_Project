@@ -1,0 +1,45 @@
+Member 4 — Host Hub, Station Controls & Insights
+====================================================================
+Assigned Branch: feat/host-hub-controls
+Repository:      https://github.com/ashishkr-001/SpotShare_DevOps_Project.git
+
+Included Files (9):
+  - frontend/host.html
+  - frontend/src/host-main.jsx
+  - frontend/src/HostApp.jsx
+  - frontend/src/HostApp.css
+  - frontend/src/AddChargerForm.jsx
+  - frontend/src/api.js
+  - frontend/src/components/AuthTopBar.jsx
+  - frontend/src/components/PasswordInput.jsx
+  - frontend/src/components/SmartInsights.jsx
+
+How to Push Your Work on Your Own Branch & Open a Pull Request:
+--------------------------------------------------------------------
+1. Make sure you accepted the GitHub Collaborator invite for the repo.
+
+2. Set your local Git author to match your GitHub account email
+   (required so GitHub credits your commits in Insights -> Contributors):
+     git config user.name "Your Name"
+     git config user.email "your-github-email@example.com"
+
+3. Clone the repo and switch to your feature branch:
+     git clone https://github.com/ashishkr-001/SpotShare_DevOps_Project.git
+     cd SpotShare_DevOps_Project
+     git checkout -b feat/host-hub-controls
+
+4. Copy your folder's files (backend/, frontend/, etc.) into the cloned
+   repo whenever you make edits or additions, then stage, commit & push:
+     git status
+     git add .
+     git commit -m "feat(member-4-host-hub): update module"
+     git push -u origin feat/host-hub-controls
+
+   Note: Pushing to `feat/host-hub-controls` automatically triggers GitHub
+   Actions CI/CD (`SpotShare CI/CD Pipeline` and `Docker Build CI`).
+
+5. Open a Pull Request on GitHub:
+   - Base branch: `main`  <-  Compare branch: `feat/host-hub-controls`
+   - Wait for all CI/CD checks to turn GREEN.
+   - Ask a teammate to review/approve, then merge using
+     "Create a merge commit" (keeps every author's commit visible).
