@@ -283,6 +283,8 @@ def test_password_reset_email_and_verification(monkeypatch, tmp_path):
     import mailer
 
     # Ensure unconfigured SMTP fails explicitly instead of faking a demo code
+    monkeypatch.delenv("SPOTSHARE_BREVO_API_KEY", raising=False)
+    monkeypatch.delenv("SPOTSHARE_EMAIL_FROM", raising=False)
     monkeypatch.delenv("SPOTSHARE_SMTP_USER", raising=False)
     monkeypatch.delenv("SPOTSHARE_SMTP_PASSWORD", raising=False)
     monkeypatch.setattr(mailer, "ENV_PATH", tmp_path / "missing.env")
@@ -395,7 +397,9 @@ def test_booking_confirmation_email(monkeypatch, tmp_path):
         def send_message(self, msg):
             sent_messages.append(msg)
 
-    # 1. Even if SMTP is unconfigured, booking creation still succeeds
+    # 1. Even if email is unconfigured, booking creation still succeeds
+    monkeypatch.delenv("SPOTSHARE_BREVO_API_KEY", raising=False)
+    monkeypatch.delenv("SPOTSHARE_EMAIL_FROM", raising=False)
     monkeypatch.delenv("SPOTSHARE_SMTP_USER", raising=False)
     monkeypatch.delenv("SPOTSHARE_SMTP_PASSWORD", raising=False)
     monkeypatch.setattr(mailer, "ENV_PATH", tmp_path / "missing.env")
@@ -466,3 +470,104 @@ def test_booking_confirmation_email(monkeypatch, tmp_path):
     # Clean up test bookings
     client.delete(f"/api/bookings/{p_data['id']}")
     client.delete(f"/api/bookings/{ev_data['id']}")
+
+
+def test_brevo_https_email_delivery(monkeypatch, tmp_path):
+    import io
+    import json
+    import re
+    import urllib.error
+    import mailer
+
+    monkeypatch.setattr(mailer, "ENV_PATH", tmp_path / "missing.env")
+    monkeypatch.delenv("SPOTSHARE_SMTP_USER", raising=False)
+    monkeypatch.delenv("SPOTSHARE_SMTP_PASSWORD", raising=False)
+    monkeypatch.delenv("SPOTSHARE_SMTP_FROM", raising=False)
+    monkeypatch.delenv("SPOTSHARE_EMAIL_FROM", raising=False)
+    monkeypatch.setenv("SPOTSHARE_BREVO_API_KEY", "xkeysib-test-key")
+
+    # Missing sender address fails cleanly with 503 email_not_configured
+    no_sender = client.post(
+        "/api/auth/forgot-password",
+        json={"email": "driver@gmail.com", "name": "Driver", "role": "customer"},
+    )
+    assert no_sender.status_code == 503
+    assert no_sender.json()["code"] == "email_not_configured"
+
+    # Configure sender email and mock Brevo HTTPS endpoint
+    monkeypatch.setenv("SPOTSHARE_EMAIL_FROM", "SpotShare Alerts <alerts@gmail.com>")
+    captured_requests = []
+
+    class FakeHttpResponse:
+        status = 201
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+    def fake_urlopen(req, timeout=15):
+        captured_requests.append({
+            "url": req.full_url,
+            "headers": {k.lower(): v for k, v in req.header_items()},
+            "body": json.loads(req.data.decode("utf-8")),
+        })
+        return FakeHttpResponse()
+
+    monkeypatch.setattr(mailer.urllib.request, "urlopen", fake_urlopen)
+
+    otp_res = client.post(
+        "/api/auth/forgot-password",
+        json={"email": "driver@gmail.com", "name": "Driver", "role": "customer"},
+    )
+    assert otp_res.status_code == 200
+    assert otp_res.json()["sent"] is True
+
+    start = now_local() + timedelta(hours=5)
+    end = start + timedelta(hours=1)
+    book_res = client.post(
+        "/api/bookings",
+        json={
+            "spot_id": "spot201",
+            "customer_name": "Driver",
+            "customer_email": "driver@gmail.com",
+            "start_time": start.strftime("%Y-%m-%dT%H:%M:%S"),
+            "end_time": end.strftime("%Y-%m-%dT%H:%M:%S"),
+            "vehicle_type": "car",
+            "requires_ev_charging": True,
+        },
+    )
+    assert book_res.status_code == 201
+    book_data = book_res.json()
+    assert book_data["email_sent"] is True
+    client.delete(f"/api/bookings/{book_data['id']}")
+
+    assert len(captured_requests) == 2
+    otp_req, book_req = captured_requests
+    assert otp_req["url"] == mailer.BREVO_API_URL
+    assert otp_req["headers"]["api-key"] == "xkeysib-test-key"
+    assert otp_req["body"]["sender"] == {"name": "SpotShare Alerts", "email": "alerts@gmail.com"}
+    assert otp_req["body"]["to"] == [{"email": "driver@gmail.com"}]
+    assert re.search(r"\b\d{6}\b", otp_req["body"]["subject"]) is not None
+    assert "<div" in otp_req["body"]["htmlContent"]
+    assert "textContent" in otp_req["body"]
+    assert book_data["id"] in book_req["body"]["subject"]
+
+    # Brevo HTTP 401 maps cleanly to 502 email_auth_failed
+    def fake_unauthorized(req, timeout=15):
+        raise urllib.error.HTTPError(
+            req.full_url,
+            401,
+            "Unauthorized",
+            {},
+            io.BytesIO(b'{"message":"Key not found"}'),
+        )
+
+    monkeypatch.setattr(mailer.urllib.request, "urlopen", fake_unauthorized)
+    fail_res = client.post(
+        "/api/auth/forgot-password",
+        json={"email": "driver@gmail.com", "name": "Driver", "role": "customer"},
+    )
+    assert fail_res.status_code == 502
+    assert fail_res.json()["code"] == "email_auth_failed"

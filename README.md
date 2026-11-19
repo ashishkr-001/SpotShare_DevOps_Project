@@ -122,13 +122,13 @@ SpotShare_DevOps_Project/
 │   ├── main.py                # FastAPI routes, CORS middleware, unified JSON error handlers
 │   ├── database.py            # SQLite schema, migrations, demo seeding, concurrency & OTP logic
 │   ├── models.py              # Pydantic v2 request/response schemas & validators
-│   ├── mailer.py              # Dynamic .env reader & Gmail TLS/SSL SMTP sender
+│   ├── mailer.py              # Brevo HTTPS API (cloud) + dynamic .env Gmail SMTP fallback
 │   ├── recommendations.py     # Multi-factor spot ranking & host analytics
-│   ├── test_backend.py        # pytest unit & integration test suite (10 tests)
+│   ├── test_backend.py        # pytest unit & integration test suite (11 tests)
 │   ├── requirements.txt       # Python dependencies
 │   ├── Dockerfile             # Production Python 3.11 FastAPI container image
 │   ├── .dockerignore          # Excludes .env, *.db, caches from Docker build context
-│   ├── .env.example           # SMTP configuration template
+│   ├── .env.example           # Brevo HTTPS API & SMTP email configuration template
 │   └── spotshare.db           # SQLite database (auto-created on first run, gitignored)
 ├── frontend/
 │   ├── index.html             # Landing page & Customer marketplace HTML entry
@@ -195,19 +195,23 @@ SpotShare_DevOps_Project/
 
 ### Environment Configuration
 
-#### 1. Backend Email / SMTP (`backend/.env`) — *Required for Forgot Password emails*
-SpotShare uses one sender mailbox to deliver 6-digit password-reset codes to **any** customer or host email address.
+#### 1. Backend Email Configuration (`backend/.env` or Railway Variables) — *Required for OTP & booking confirmation emails*
+SpotShare uses one sender address to deliver 6-digit password-reset codes and booking confirmations to **any** customer or host email address:
 
-1. Enable **2-Step Verification** on the sender Google account and create a 16-character **App Password** at `https://myaccount.google.com/apppasswords`.
-2. Copy `backend/.env.example` to `backend/.env` and set your credentials:
-   ```env
-   SPOTSHARE_SMTP_HOST=smtp.gmail.com
-   SPOTSHARE_SMTP_PORT=587
-   SPOTSHARE_SMTP_USER=yourgmail@gmail.com
-   SPOTSHARE_SMTP_PASSWORD=your_16_char_app_password
-   SPOTSHARE_SMTP_FROM=SpotShare <yourgmail@gmail.com>
-   ```
-   > `mailer.py` reads `backend/.env` dynamically on each request and strips spaces from App Passwords automatically—no backend restart is required after saving.
+- **Option A — Brevo Free HTTPS API (Recommended for Railway Free/Trial/Hobby):** Railway blocks outbound SMTP ports (`25`/`465`/`587`) unless on a Pro plan, whereas Brevo sends up to **300 emails/day free** over HTTPS (`https://api.brevo.com/v3/smtp/email`):
+  1. Sign up free at `brevo.com`, verify your Gmail address as a sender (**Senders, Domains & IPs**), and create an API key (**SMTP & API → API Keys**).
+  2. Set `SPOTSHARE_BREVO_API_KEY` and `SPOTSHARE_EMAIL_FROM` (e.g., `SpotShare <yourgmail@gmail.com>`) in Railway Variables or `backend/.env`.
+- **Option B — Gmail SMTP (Local development or Railway Pro):**
+  1. Enable **2-Step Verification** on the sender Google account and create a 16-character **App Password** at `https://myaccount.google.com/apppasswords`.
+  2. Copy `backend/.env.example` to `backend/.env` and set your credentials:
+     ```env
+     SPOTSHARE_SMTP_HOST=smtp.gmail.com
+     SPOTSHARE_SMTP_PORT=587
+     SPOTSHARE_SMTP_USER=yourgmail@gmail.com
+     SPOTSHARE_SMTP_PASSWORD=your_16_char_app_password
+     SPOTSHARE_SMTP_FROM=SpotShare <yourgmail@gmail.com>
+     ```
+     > `mailer.py` reads `backend/.env` dynamically on each request and strips spaces from App Passwords automatically—no backend restart is required after saving.
 
 #### 2. Optional Backend Variables
 | Variable | Default | Description |
@@ -363,8 +367,8 @@ npm run build
 
 | Issue | Fix |
 |---|---|
-| **`503 Email service is not configured yet`** | Create `backend/.env` from `backend/.env.example` and add your Gmail address (`SPOTSHARE_SMTP_USER`) and 16-char Google App Password (`SPOTSHARE_SMTP_PASSWORD`). |
-| **`502 Gmail SMTP authentication failed`** | Ensure 2-Step Verification is enabled on your Google account and use a 16-character **App Password** (not your normal Gmail login password). |
+| **`503 Email service is not configured yet`** | On Railway Free/Trial/Hobby, set `SPOTSHARE_BREVO_API_KEY` and `SPOTSHARE_EMAIL_FROM` in **`spotshare-backend` → Variables**. Locally, create `backend/.env` from `backend/.env.example` with your Gmail `SPOTSHARE_SMTP_USER` and `SPOTSHARE_SMTP_PASSWORD`. |
+| **`502` Email auth failed** | For Brevo (`SPOTSHARE_BREVO_API_KEY`), confirm your v3 API key and verified sender email. For Gmail SMTP, ensure 2-Step Verification is enabled and use a 16-character **App Password** (not your normal Gmail login password). |
 | **Forgot password says `No account found`** | Customer and host profiles are stored in browser `localStorage` (`spotshare_registered_users` / `spotshare_registered_hosts`); make sure you are testing with an email registered in that browser. |
 | **Frontend shows `Cannot reach the server`** | Confirm the FastAPI backend is running on port `8000` (`http://localhost:8000/api/health`). |
 | **Note on Simulator & Auth Storage** | The check-in barrier simulator is software-only (no hardware integration). User/host login profiles persist in browser `localStorage`, while listings, bookings, analytics, and password-reset OTPs persist in SQLite. |
@@ -391,7 +395,7 @@ SpotShare is deployed live on **Railway** (`production` environment) as two cont
 | **`spotshare-backend`** | [spotshare-backend-production.up.railway.app](https://spotshare-backend-production.up.railway.app) | `ashishkr001/spotshare-backend:latest` (Port `8000`) | Persistent volume `spotshare-db-data` mounted at `/app/data` (`SPOTSHARE_DB_PATH=/app/data/spotshare.db`), `SPOTSHARE_CORS_ORIGINS=*`, healthcheck `/api/health` |
 | **`spotshare-frontend`** | [spotshare-frontend-production.up.railway.app](https://spotshare-frontend-production.up.railway.app) | `ashishkr001/spotshare-frontend:railway` (Nginx Port `80`) | Built with `--build-arg VITE_API_BASE_URL=https://spotshare-backend-production.up.railway.app`, healthcheck `/` |
 
-> **Optional Live Email Setup on Railway:** Local Gmail secrets (`backend/.env`) are excluded from Docker images and Git. To enable live OTP & booking confirmation emails in production, add `SPOTSHARE_SMTP_HOST`, `SPOTSHARE_SMTP_PORT`, `SPOTSHARE_SMTP_USER`, `SPOTSHARE_SMTP_PASSWORD`, and optionally `SPOTSHARE_SMTP_FROM` under **`spotshare-backend` → Variables** in the Railway Dashboard.
+> **Live Email Setup on Railway Free / Trial / Hobby Plans:** Railway disables outbound SMTP ports unless on a Pro plan, so `spotshare-backend` uses **Brevo's HTTPS API** (free 300 emails/day). Add `SPOTSHARE_BREVO_API_KEY` and `SPOTSHARE_EMAIL_FROM` (your Brevo-verified Gmail sender) under **`spotshare-backend` → Variables** in the Railway Dashboard to enable both booking confirmation emails and 6-digit password-reset codes.
 
 ### Run with Docker Compose or Pre-Built Docker Hub Images
 
@@ -403,7 +407,7 @@ docker compose up --build -d
 - **Backend API & Docs:** `http://localhost:8000/docs`
 
 **Pull pre-built images from Docker Hub (`ashishkr001`):**
-- Backend: [`ashishkr001/spotshare-backend`](https://hub.docker.com/r/ashishkr001/spotshare-backend) (`latest`, `1.1`)
+- Backend: [`ashishkr001/spotshare-backend`](https://hub.docker.com/r/ashishkr001/spotshare-backend) (`latest`, `1.2`, `1.1`)
 - Frontend: [`ashishkr001/spotshare-frontend`](https://hub.docker.com/r/ashishkr001/spotshare-frontend) (`latest`, `1.2` for local `http://<host>:8000`; `railway` for the hosted Railway backend)
 
 ```bash

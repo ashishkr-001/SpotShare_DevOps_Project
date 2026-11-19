@@ -1,22 +1,30 @@
-"""SMTP email delivery helper for SpotShare (stdlib smtplib, no extra dependencies).
+"""Email delivery helper for SpotShare (Brevo HTTPS API + Gmail SMTP fallback).
 
 Reads configuration from process environment variables first, falling back to
 `backend/.env` so local configuration changes take effect immediately.
+Uses Brevo's HTTPS v3 API when SPOTSHARE_BREVO_API_KEY is configured (required on
+cloud hosts like Railway Free/Trial/Hobby where outbound SMTP ports are blocked),
+and falls back to stdlib smtplib otherwise.
 """
 from __future__ import annotations
 
 import html
+import json
 import os
 import smtplib
 import ssl
+import urllib.error
+import urllib.request
 from datetime import datetime
 from email.message import EmailMessage
+from email.utils import parseaddr
 from pathlib import Path
 from typing import Any, Dict, Optional
 
 from database import ServiceError
 
 ENV_PATH = Path(__file__).resolve().parent / ".env"
+BREVO_API_URL = "https://api.brevo.com/v3/smtp/email"
 
 
 def _read_dotenv(path: Optional[Path] = None) -> Dict[str, str]:
@@ -59,7 +67,11 @@ def get_smtp_config() -> Dict[str, object]:
     user = _env("SPOTSHARE_SMTP_USER", dotenv_values, "").strip()
     # Gmail App Passwords are often copied with spaces every 4 characters
     password = _env("SPOTSHARE_SMTP_PASSWORD", dotenv_values, "").replace(" ", "").strip()
-    sender = _env("SPOTSHARE_SMTP_FROM", dotenv_values, "").strip() or user
+    sender = (
+        _env("SPOTSHARE_EMAIL_FROM", dotenv_values, "").strip()
+        or _env("SPOTSHARE_SMTP_FROM", dotenv_values, "").strip()
+        or user
+    )
     return {
         "host": host,
         "port": port,
@@ -69,21 +81,110 @@ def get_smtp_config() -> Dict[str, object]:
     }
 
 
-def _send_email_message(msg: EmailMessage, to_email: str) -> None:
-    cfg = get_smtp_config()
+def get_brevo_config() -> Dict[str, str]:
+    dotenv_values = _read_dotenv()
+    api_key = _env("SPOTSHARE_BREVO_API_KEY", dotenv_values, "").strip()
+    sender = (
+        _env("SPOTSHARE_EMAIL_FROM", dotenv_values, "").strip()
+        or _env("SPOTSHARE_SMTP_FROM", dotenv_values, "").strip()
+        or _env("SPOTSHARE_SMTP_USER", dotenv_values, "").strip()
+    )
+    return {
+        "api_key": api_key,
+        "sender": sender,
+    }
+
+
+def _parse_sender(sender_raw: str) -> Dict[str, str]:
+    name, addr = parseaddr(sender_raw.strip())
+    email_addr = addr or sender_raw.strip()
+    return {"name": name or "SpotShare", "email": email_addr}
+
+
+def _extract_message_bodies(msg: EmailMessage) -> tuple[str, str]:
+    plain_part = msg.get_body(preferencelist=("plain",))
+    html_part = msg.get_body(preferencelist=("html",))
+    text_body = str(plain_part.get_content()) if plain_part is not None else ""
+    html_body = str(html_part.get_content()) if html_part is not None else ""
+    if not html_body and text_body:
+        html_body = f"<pre>{html.escape(text_body)}</pre>"
+    return text_body, html_body
+
+
+def _send_via_brevo(msg: EmailMessage, to_email: str, api_key: str, sender_raw: str) -> None:
+    if not sender_raw:
+        raise ServiceError(
+            503,
+            "email_not_configured",
+            "Brevo sender email is not configured. Set SPOTSHARE_EMAIL_FROM (or SPOTSHARE_SMTP_USER) "
+            "to a verified sender email in your Brevo account.",
+        )
+
+    text_body, html_body = _extract_message_bodies(msg)
+    _, to_addr = parseaddr(to_email.strip())
+    payload: Dict[str, Any] = {
+        "sender": _parse_sender(sender_raw),
+        "to": [{"email": to_addr or to_email.strip()}],
+        "subject": str(msg["Subject"] or "SpotShare Notification"),
+        "htmlContent": html_body,
+    }
+    if text_body:
+        payload["textContent"] = text_body
+
+    req = urllib.request.Request(
+        BREVO_API_URL,
+        data=json.dumps(payload).encode("utf-8"),
+        headers={
+            "accept": "application/json",
+            "content-type": "application/json",
+            "api-key": api_key,
+        },
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            if resp.status >= 400:
+                raise ServiceError(
+                    502,
+                    "email_send_failed",
+                    f"Brevo API returned unexpected status {resp.status}.",
+                )
+    except urllib.error.HTTPError as exc:
+        detail = ""
+        try:
+            raw_err = exc.read().decode("utf-8", errors="replace")
+            parsed = json.loads(raw_err)
+            if isinstance(parsed, dict) and parsed.get("message"):
+                detail = str(parsed["message"])
+            else:
+                detail = raw_err[:200]
+        except Exception:
+            detail = str(exc.reason or exc.code)
+        if exc.code == 401:
+            raise ServiceError(
+                502,
+                "email_auth_failed",
+                f"Brevo API key authentication failed ({detail}). Verify SPOTSHARE_BREVO_API_KEY.",
+            ) from exc
+        raise ServiceError(
+            502,
+            "email_send_failed",
+            f"Could not send email to {to_email} via Brevo: {detail}",
+        ) from exc
+    except (urllib.error.URLError, OSError) as exc:
+        raise ServiceError(
+            502,
+            "email_send_failed",
+            f"Could not reach Brevo email API: {exc}",
+        ) from exc
+
+
+def _send_via_smtp(msg: EmailMessage, to_email: str, cfg: Dict[str, object]) -> None:
     user = str(cfg["user"])
     password = str(cfg["password"])
     host = str(cfg["host"])
     port = int(cfg["port"])
     sender = str(cfg["sender"])
-
-    if not user or not password:
-        raise ServiceError(
-            503,
-            "email_not_configured",
-            "Email service is not configured yet. Add SPOTSHARE_SMTP_USER and a Gmail App Password "
-            "as SPOTSHARE_SMTP_PASSWORD in backend/.env to send emails.",
-        )
 
     msg["From"] = sender
     msg["To"] = to_email
@@ -114,6 +215,25 @@ def _send_email_message(msg: EmailMessage, to_email: str) -> None:
             "email_send_failed",
             f"Could not send email to {to_email}: {exc}",
         ) from exc
+
+
+def _send_email_message(msg: EmailMessage, to_email: str) -> None:
+    brevo_cfg = get_brevo_config()
+    if brevo_cfg["api_key"]:
+        _send_via_brevo(msg, to_email, brevo_cfg["api_key"], brevo_cfg["sender"])
+        return
+
+    smtp_cfg = get_smtp_config()
+    if str(smtp_cfg["user"]) and str(smtp_cfg["password"]):
+        _send_via_smtp(msg, to_email, smtp_cfg)
+        return
+
+    raise ServiceError(
+        503,
+        "email_not_configured",
+        "Email service is not configured yet. Set SPOTSHARE_BREVO_API_KEY and SPOTSHARE_EMAIL_FROM "
+        "(recommended for Railway), or SPOTSHARE_SMTP_USER and SPOTSHARE_SMTP_PASSWORD in backend/.env.",
+    )
 
 
 def send_reset_code_email(*, to_email: str, recipient_name: str, code: str, role: str) -> None:
